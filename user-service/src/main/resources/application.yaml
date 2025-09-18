@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: 'user-service'
+  datasource:
+    url: jdbc:postgresql://localhost:5432/userdatadb
+    username: postgres
+    password: innocourse
+  jpa:
+    hibernate:
+      ddl-auto: validate
