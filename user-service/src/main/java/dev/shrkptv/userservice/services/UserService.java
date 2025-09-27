@@ -9,6 +9,9 @@ import dev.shrkptv.userservice.exception.UserNotFoundByIdException;
 import dev.shrkptv.userservice.mapper.UserMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,6 +22,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
+    @CachePut(value = "users", key = "#result.id")
     public User createUser(User user) {
         userRepository.findUserByEmail(user.getEmail())
                 .ifPresent(existing -> {
@@ -27,6 +31,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    @Cacheable(value = "users", key = "#id")
     public User getUserById(Long id) {
         return userRepository.findUserById(id).orElseThrow(() -> new UserNotFoundByIdException(id));
     }
@@ -42,6 +47,7 @@ public class UserService {
     }
 
     @Transactional
+    @CachePut(value = "users", key = "#id")
     public User updateUser(Long id, UserUpdateDTO userUpdateDTO) {
         User user = userRepository.findUserById(id).orElseThrow(() -> new UserNotFoundByIdException(id));
         if (userUpdateDTO.getEmail() != null
@@ -54,6 +60,7 @@ public class UserService {
     }
 
     @Transactional
+    @CacheEvict(value = "users", key = "#id")
     public void deleteUser(Long id) {
         userRepository.deleteUserById(id);
     }

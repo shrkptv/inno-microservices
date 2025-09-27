@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 
 @Entity
@@ -23,7 +24,7 @@ import java.time.LocalDate;
 @Setter
 @EqualsAndHashCode(exclude = {"user"})
 @ToString(exclude = {"user"})
-public class Card extends BaseEntity<Long>{
+public class Card extends BaseEntity<Long> implements Serializable {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="user_id")
