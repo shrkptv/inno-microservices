@@ -1,11 +1,8 @@
-package dev.shrkptv.userservice.entity;
+package dev.shrkptv.userservice.database.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -26,22 +23,16 @@ import java.time.LocalDate;
 @Setter
 @EqualsAndHashCode(exclude = {"user"})
 @ToString(exclude = {"user"})
-public class Card {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Card extends BaseEntity<Long>{
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="user_id")
     private User user;
 
-    @Column(name="number", unique = true)
+    @Column(name="number", unique = true, nullable = false)
     private String number;
     private String holder;
 
     @Column(name = "expiration_date")
     private LocalDate expirationDate;
-
-
 }
