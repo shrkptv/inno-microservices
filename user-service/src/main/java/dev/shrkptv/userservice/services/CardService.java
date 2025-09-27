@@ -5,14 +5,14 @@ import dev.shrkptv.userservice.database.entity.User;
 import dev.shrkptv.userservice.database.repository.CardRepository;
 import dev.shrkptv.userservice.database.repository.UserRepository;
 import dev.shrkptv.userservice.dto.CardUpdateDTO;
-import dev.shrkptv.userservice.dto.UserUpdateDTO;
+import dev.shrkptv.userservice.exception.CardNotFoundException;
+import dev.shrkptv.userservice.exception.UserNotFoundByIdException;
 import dev.shrkptv.userservice.mapper.CardMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,13 +22,13 @@ public class CardService {
     private final CardMapper cardMapper;
 
     public Card createCard(Card card, Long userId) {
-        Optional<User> user = userRepository.findUserById(userId);
-        user.ifPresent(card::setUser);
+        User user = userRepository.findUserById(userId).orElseThrow(() -> new UserNotFoundByIdException(userId));
+        card.setUser(user);
         return cardRepository.save(card);
     }
 
-    public Optional<Card> getUser(Long id) {
-        return cardRepository.findCardById(id);
+    public Card getCard(Long id) {
+        return cardRepository.findCardById(id).orElseThrow(() -> new CardNotFoundException(id));
     }
 
     public List<Card> getCardList(List<Long> idList) {
@@ -36,9 +36,9 @@ public class CardService {
     }
 
     @Transactional
-    public Optional<Card> updateCard(Long id, CardUpdateDTO cardUpdateDTO) {
-        Optional<Card> card = cardRepository.findCardById(id);
-        card.ifPresent(c -> cardMapper.updateEntityFromDto(cardUpdateDTO, c));
+    public Card updateCard(Long id, CardUpdateDTO cardUpdateDTO) {
+        Card card = cardRepository.findCardById(id).orElseThrow(() -> new CardNotFoundException(id));
+        cardMapper.updateEntityFromDto(cardUpdateDTO, card);
         return card;
     }
 
