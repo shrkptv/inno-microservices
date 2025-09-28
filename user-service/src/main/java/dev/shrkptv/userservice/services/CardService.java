@@ -51,6 +51,10 @@ public class CardService {
     @Transactional
     @CacheEvict(value = "cards", key = "#id")
     public void deleteCard(Long id) {
+        if (!cardRepository.existsById(id)) {
+            throw new CardNotFoundException(id);
+        }
+
         cardRepository.deleteCardById(id);
     }
 }

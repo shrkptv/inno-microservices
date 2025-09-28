@@ -53,7 +53,9 @@ public class UserService {
         if (userUpdateDTO.getEmail() != null
                 && !userUpdateDTO.getEmail().equals(user.getEmail())) {
             userRepository.findUserByEmail(userUpdateDTO.getEmail())
-                    .orElseThrow(() -> new UserAlreadyExistsException(userUpdateDTO.getEmail()));
+                    .ifPresent(existing -> {
+                        throw new UserAlreadyExistsException(userUpdateDTO.getEmail());
+                    });
         }
         userMapper.updateEntityFromDto(userUpdateDTO, user);
         return user;
@@ -62,6 +64,10 @@ public class UserService {
     @Transactional
     @CacheEvict(value = "users", key = "#id")
     public void deleteUser(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new UserNotFoundByIdException(id);
+        }
+
         userRepository.deleteUserById(id);
     }
 }
