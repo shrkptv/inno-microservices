@@ -1,7 +1,6 @@
 package dev.shrkptv.userservice.mapper;
 
 import dev.shrkptv.userservice.database.entity.Card;
-import dev.shrkptv.userservice.database.entity.User;
 import dev.shrkptv.userservice.dto.CardCreateDTO;
 import dev.shrkptv.userservice.dto.CardResponseDTO;
 import dev.shrkptv.userservice.dto.CardUpdateDTO;
