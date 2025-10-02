@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: 'user-service'
+  datasource:
+    url: jdbc:postgresql://localhost:5432/userdatadb
+    username: postgres
+    password: innocourse
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: 12345
+  cache:
+    type: redis
+server:
+  port: 8080
