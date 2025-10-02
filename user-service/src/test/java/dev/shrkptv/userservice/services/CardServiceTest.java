@@ -8,6 +8,7 @@ import dev.shrkptv.userservice.dto.CardUpdateDTO;
 import dev.shrkptv.userservice.exception.CardNotFoundException;
 import dev.shrkptv.userservice.exception.UserNotFoundByIdException;
 import dev.shrkptv.userservice.mapper.CardMapper;
+import dev.shrkptv.userservice.services.CardService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -7,6 +7,7 @@ import dev.shrkptv.userservice.exception.UserAlreadyExistsException;
 import dev.shrkptv.userservice.exception.UserNotFoundByEmailException;
 import dev.shrkptv.userservice.exception.UserNotFoundByIdException;
 import dev.shrkptv.userservice.mapper.UserMapper;
+import dev.shrkptv.userservice.services.UserService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

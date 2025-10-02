@@ -5,7 +5,7 @@ import dev.shrkptv.userservice.database.entity.User;
 import dev.shrkptv.userservice.dto.CardUpdateDTO;
 import dev.shrkptv.userservice.exception.CardNotFoundException;
 import dev.shrkptv.userservice.services.CardService;
-import dev.shrkptv.userservice.services.UserService;
+import dev.shrkptv.userservice.services.impl.UserServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +28,7 @@ public class CardServiceIT {
     private CardService cardService;
 
     @Autowired
-    private UserService userService;
+    private UserServiceImpl userService;
 
     @Test
     @DisplayName("Create and get card")

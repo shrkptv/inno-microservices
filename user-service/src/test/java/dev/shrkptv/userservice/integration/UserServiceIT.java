@@ -1,6 +1,5 @@
 package dev.shrkptv.userservice.integration;
 
-import dev.shrkptv.userservice.UserServiceApplication;
 import dev.shrkptv.userservice.database.entity.User;
 import dev.shrkptv.userservice.dto.UserUpdateDTO;
 import dev.shrkptv.userservice.exception.UserNotFoundByIdException;

@@ -27,7 +27,7 @@ public class RestControllerExceptionHandler extends ResponseEntityExceptionHandl
     @ExceptionHandler
     public ResponseEntity<Object> handleUserAlreadyExists(UserAlreadyExistsException ex)
     {
-        return ResponseEntity.status(409).body(Map.of("Error", ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("Error", ex.getMessage()));
     }
 
     @ExceptionHandler

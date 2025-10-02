@@ -27,6 +27,7 @@ public class User extends BaseEntity<Long> implements Serializable {
 
     @Column(name="birth_date")
     private LocalDate birthDate;
+    @Column(unique = true)
     private String email;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
