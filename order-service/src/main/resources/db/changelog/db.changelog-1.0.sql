@@ -24,7 +24,7 @@ CREATE TABLE order_items
     order_id BIGINT NOT NULL,
     item_id  BIGINT NOT NULL,
     quantity INT    NOT NULL,
-    FOREIGN KEY (order_id) REFERENCES orders (id) ON DELETE CASCADE,
+    FOREIGN KEY (order_id) REFERENCES orders (id),
     FOREIGN KEY (item_id) REFERENCES items (id)
 );
 
