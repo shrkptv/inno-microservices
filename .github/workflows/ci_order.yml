@@ -3,7 +3,8 @@ name: CI Pipeline Order
 on:
   push:
     branches:
-      - '*'
+      - master
+      - orderservice
   pull_request:
 
 defaults:
