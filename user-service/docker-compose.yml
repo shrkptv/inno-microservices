@@ -7,7 +7,7 @@ services:
 #    networks:
 #      - backend
     ports:
-      - "8080:8080"
+      - "8081:8081"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/userdatadb
       SPRING_DATA_REDIS_HOST: redis
@@ -23,7 +23,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: innocourse
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - user-service-db-data:/var/lib/postgresql/data
 
