@@ -31,5 +31,5 @@ public class OrderItem extends BaseEntity<Long> {
     @JoinColumn(name = "item_id", nullable = false)
     private Item item;
 
-    private int quantity;
+    private Integer quantity;
 }
