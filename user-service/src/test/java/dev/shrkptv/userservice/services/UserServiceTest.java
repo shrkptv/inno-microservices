@@ -2,12 +2,14 @@ package dev.shrkptv.userservice.services;
 
 import dev.shrkptv.userservice.database.entity.User;
 import dev.shrkptv.userservice.database.repository.UserRepository;
+import dev.shrkptv.userservice.dto.UserCreateDTO;
+import dev.shrkptv.userservice.dto.UserResponseDTO;
 import dev.shrkptv.userservice.dto.UserUpdateDTO;
 import dev.shrkptv.userservice.exception.UserAlreadyExistsException;
 import dev.shrkptv.userservice.exception.UserNotFoundByEmailException;
 import dev.shrkptv.userservice.exception.UserNotFoundByIdException;
 import dev.shrkptv.userservice.mapper.UserMapper;
-import dev.shrkptv.userservice.services.UserService;
+import dev.shrkptv.userservice.services.impl.UserServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,35 +32,52 @@ class UserServiceTest {
     @Mock
     private UserMapper userMapper;
     @InjectMocks
-    private UserService userService;
+    private UserServiceImpl userService;
 
     @Test
     @DisplayName("Create new user when email is not taken")
     void testCreateUser() {
+        UserCreateDTO userCreateDTO = new UserCreateDTO();
+        userCreateDTO.setEmail("test@gmail.com");
+        userCreateDTO.setName("Vanya");
+
         User user = new User();
         user.setId(1L);
         user.setEmail("test@gmail.com");
+        user.setName("Vanya");
 
-        when(userRepository.findUserByEmail(user.getEmail()))
+        UserResponseDTO userResponseDTO = new UserResponseDTO();
+        userResponseDTO.setId(1L);
+        userResponseDTO.setEmail("test@gmail.com");
+        userResponseDTO.setName("Vanya");
+
+        when(userRepository.findUserByEmail(userCreateDTO.getEmail()))
                 .thenReturn(Optional.empty());
         when(userRepository.save(user)).thenReturn(user);
+        when(userMapper.toEntity(userCreateDTO)).thenReturn(user);
+        when(userMapper.toDto(user)).thenReturn(userResponseDTO);
 
-        User result = userService.createUser(user);
+        UserResponseDTO result = userService.createUser(userCreateDTO);
 
-        assertEquals(user.getId(), result.getId());
-        assertEquals(user.getEmail(), result.getEmail());
+        assertEquals(userResponseDTO.getId(), result.getId());
+        assertEquals(userResponseDTO.getEmail(), result.getEmail());
+        assertEquals(userResponseDTO.getName(), result.getName());
     }
 
     @Test
     @DisplayName("Throw exception when creating user with existing email")
     void testCreateUserAlreadyExists() {
+        UserCreateDTO userCreateDTO = new UserCreateDTO();
+        userCreateDTO.setEmail("test@gmail.com");
+
         User user = new User();
         user.setEmail("test@gmail.com");
 
+        when(userMapper.toEntity(userCreateDTO)).thenReturn(user);
         when(userRepository.findUserByEmail(user.getEmail()))
                 .thenReturn(Optional.of(user));
 
-        assertThrows(UserAlreadyExistsException.class, () -> userService.createUser(user));
+        assertThrows(UserAlreadyExistsException.class, () -> userService.createUser(userCreateDTO));
     }
 
     @Test
@@ -67,8 +86,12 @@ class UserServiceTest {
         User user = new User();
         user.setId(2L);
 
+        UserResponseDTO userResponseDTO = new UserResponseDTO();
+        userResponseDTO.setId(2L);
+
         when(userRepository.findUserById(2L))
                 .thenReturn(Optional.of(user));
+        when(userMapper.toDto(user)).thenReturn(userResponseDTO);
 
         assertEquals(user.getId(), userService.getUserById(2L).getId());
     }
@@ -88,6 +111,10 @@ class UserServiceTest {
         User user = new User();
         user.setEmail("test@gmail.com");
 
+        UserResponseDTO userResponseDTO = new UserResponseDTO();
+        userResponseDTO.setEmail("test@gmail.com");
+
+        when(userMapper.toDto(user)).thenReturn(userResponseDTO);
         when(userRepository.findUserByEmail("test@gmail.com"))
                 .thenReturn(Optional.of(user));
 
@@ -112,10 +139,21 @@ class UserServiceTest {
         User secondUser = new User();
         secondUser.setId(2L);
 
+        UserResponseDTO firstDto = new UserResponseDTO();
+        firstDto.setId(1L);
+
+        UserResponseDTO secondDto = new UserResponseDTO();
+        secondDto.setId(2L);
+
         when(userRepository.findUsersByIdIn(List.of(1L, 2L)))
                 .thenReturn(List.of(firstUser, secondUser));
+        when(userMapper.toDto(firstUser)).thenReturn(firstDto);
+        when(userMapper.toDto(secondUser)).thenReturn(secondDto);
 
-        assertEquals(2, userService.getUserList(List.of(1L, 2L)).size());
+        List<UserResponseDTO> result = userService.getUserList(List.of(1L, 2L));
+
+        assertEquals(2, result.size());
+        assertEquals(List.of(1L, 2L), result.stream().map(UserResponseDTO::getId).toList());
     }
 
     @Test

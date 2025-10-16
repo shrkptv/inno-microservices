@@ -1,8 +1,9 @@
 package dev.shrkptv.userservice.integration;
 
-import dev.shrkptv.userservice.database.entity.Card;
-import dev.shrkptv.userservice.database.entity.User;
+import dev.shrkptv.userservice.dto.CardCreateDTO;
+import dev.shrkptv.userservice.dto.CardResponseDTO;
 import dev.shrkptv.userservice.dto.CardUpdateDTO;
+import dev.shrkptv.userservice.dto.UserCreateDTO;
 import dev.shrkptv.userservice.exception.CardNotFoundException;
 import dev.shrkptv.userservice.services.CardService;
 import dev.shrkptv.userservice.services.impl.UserServiceImpl;
@@ -33,19 +34,11 @@ public class CardServiceIT {
     @Test
     @DisplayName("Create and get card")
     void testCreateAndGetCard() {
-        User user = new User();
-        user.setName("Alexander");
-        user.setSurname("Shirokopytov");
-        user.setEmail("shrkptv@gmail.com");
-        user.setBirthDate(LocalDate.of(2006, 6, 7));
-        userService.createUser(user);
+        Long userId = createTestUser("Alexander", "Shirokopytov", "shrkptv@gmail.com",
+                LocalDate.of(2006, 6, 7));
 
-        Card card = new Card();
-        card.setNumber("1234 5678 9012 3456");
-        card.setExpirationDate(LocalDate.of(2030, 2, 8));
-        card.setHolder("Belarusbank");
-
-        Card createdCard = cardService.createCard(card, user.getId());
+        CardResponseDTO createdCard = createTestCard(userId, "1234 5678 9012 3456",
+                LocalDate.of(2030, 2, 8), "Belarusbank");
         assertNotNull(createdCard.getId());
         assertEquals("1234 5678 9012 3456", cardService.getCard(createdCard.getId()).getNumber());
     }
@@ -53,22 +46,15 @@ public class CardServiceIT {
     @Test
     @DisplayName("Update card")
     void testUpdateCard() {
-        User user = new User();
-        user.setName("TestUser");
-        user.setSurname("Test");
-        user.setEmail("card.user@gmail.com");
-        user.setBirthDate(LocalDate.of(2000, 1, 1));
-        userService.createUser(user);
+        Long userId = createTestUser("TestUser", "Test", "card_user@gmail.com",
+                LocalDate.of(2000, 1, 1));
 
-        Card card = new Card();
-        card.setNumber("1111 1111 1111 1111");
-        card.setExpirationDate(LocalDate.of(2027, 11,11));
-        card.setHolder("Belarusbank");
-        Card created = cardService.createCard(card, user.getId());
+        CardResponseDTO created = createTestCard(userId, "1111 1111 1111 1111",
+                LocalDate.of(2027, 11,11), "Belarusbank");
 
         CardUpdateDTO cardUpdateDTO = new CardUpdateDTO();
         cardUpdateDTO.setExpirationDate(LocalDate.of(2029, 11, 11));
-        Card updatedCard = cardService.updateCard(created.getId(), cardUpdateDTO);
+        CardResponseDTO updatedCard = cardService.updateCard(created.getId(), cardUpdateDTO);
 
         assertEquals(LocalDate.of(2029, 11,11), updatedCard.getExpirationDate());
     }
@@ -76,22 +62,33 @@ public class CardServiceIT {
     @Test
     @DisplayName("Delete card")
     void testDeleteCard() {
-        User user = new User();
-        user.setName("User");
-        user.setSurname("Test");
-        user.setEmail("user@gmail.com");
-        user.setBirthDate(LocalDate.of(2002, 12, 1));
-        userService.createUser(user);
+        Long userId = createTestUser("User", "Test", "user@gmail.com",
+                LocalDate.of(2002, 12, 1));
 
-        Card card = new Card();
-        card.setNumber("2222 2222 2222 2222");
-        card.setExpirationDate(LocalDate.of(2031, 1,1));
-        card.setHolder("Belarusbank");
-        Card createdCard = cardService.createCard(card, user.getId());
+        CardResponseDTO createdCard = createTestCard(userId, "2222 2222 2222 2222",
+                LocalDate.of(2031, 1,1), "Belarusbank");
 
         Long id = createdCard.getId();
         cardService.deleteCard(id);
 
         assertThrows(CardNotFoundException.class, () -> cardService.getCard(id));
+    }
+
+    private Long createTestUser(String name, String surname, String email, LocalDate birthDate) {
+        UserCreateDTO user = new UserCreateDTO();
+        user.setName(name);
+        user.setSurname(surname);
+        user.setEmail(email);
+        user.setBirthDate(birthDate);
+        userService.createUser(user);
+        return userService.getUserByEmail(email).getId();
+    }
+
+    private CardResponseDTO createTestCard(Long userId, String number, LocalDate expirationDate, String holder) {
+        CardCreateDTO card = new CardCreateDTO();
+        card.setNumber(number);
+        card.setExpirationDate(expirationDate);
+        card.setHolder(holder);
+        return cardService.createCard(card, userId);
     }
 }

@@ -1,6 +1,7 @@
 package dev.shrkptv.userservice.integration;
 
-import dev.shrkptv.userservice.database.entity.User;
+import dev.shrkptv.userservice.dto.UserCreateDTO;
+import dev.shrkptv.userservice.dto.UserResponseDTO;
 import dev.shrkptv.userservice.dto.UserUpdateDTO;
 import dev.shrkptv.userservice.exception.UserNotFoundByIdException;
 import dev.shrkptv.userservice.services.UserService;
@@ -25,13 +26,8 @@ public class UserServiceIT {
     @Test
     @DisplayName("Create and get user")
     void testCreateAndGetUser(){
-        User user = new User();
-        user.setName("Danial");
-        user.setSurname("Ivanov");
-        user.setEmail("test@gmail.com");
-        user.setBirthDate(LocalDate.of(1999, 12, 16));
-
-        User createdUser = userService.createUser(user);
+        UserResponseDTO createdUser = createTestUser("Danial", "Ivanov", "test@gmail.com",
+                LocalDate.of(1999, 12, 16));
 
         assertNotNull(createdUser.getId());
         assertEquals("Danial", userService.getUserById(createdUser.getId()).getName());
@@ -40,18 +36,13 @@ public class UserServiceIT {
     @Test
     @DisplayName("Update user")
     void testUpdateUser(){
-        User user = new User();
-        user.setName("Oksana");
-        user.setSurname("Radionova");
-        user.setEmail("oks@gmail.com");
-        user.setBirthDate(LocalDate.of(2000, 1, 1));
-
-        User createdUser = userService.createUser(user);
+        UserResponseDTO createdUser = createTestUser("Oksana", "Radionova", "oks@gmail.com",
+                LocalDate.of(2000, 1, 1));
 
         UserUpdateDTO userUpdateDTO = new UserUpdateDTO();
         userUpdateDTO.setSurname("Budko");
 
-        User updatedUser = userService.updateUser(createdUser.getId(), userUpdateDTO);
+        UserResponseDTO updatedUser = userService.updateUser(createdUser.getId(), userUpdateDTO);
 
         assertEquals("Budko", updatedUser.getSurname());
     }
@@ -59,16 +50,21 @@ public class UserServiceIT {
     @Test
     @DisplayName("Delete user")
     void testDeleteUser(){
-        User user = new User();
-        user.setName("Ivan");
-        user.setSurname("Ivanov");
-        user.setEmail("iva@gmail.com");
-        user.setBirthDate(LocalDate.of(1999, 5,5));
-
-        User createdUser = userService.createUser(user);
+        UserResponseDTO createdUser = createTestUser("Ivan", "Ivanov", "iva@gmail.com",
+                LocalDate.of(1999, 5,5));
         Long id = createdUser.getId();
         userService.deleteUser(id);
 
         assertThrows(UserNotFoundByIdException.class, () -> userService.getUserById(id));
+    }
+
+    private UserResponseDTO createTestUser(String name, String surname, String email, LocalDate birthDate) {
+        UserCreateDTO user = new UserCreateDTO();
+        user.setName(name);
+        user.setSurname(surname);
+        user.setEmail(email);
+        user.setBirthDate(birthDate);
+        userService.createUser(user);
+        return userService.getUserByEmail(email);
     }
 }

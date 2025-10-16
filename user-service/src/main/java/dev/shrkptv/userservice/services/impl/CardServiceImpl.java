@@ -4,6 +4,8 @@ import dev.shrkptv.userservice.database.entity.Card;
 import dev.shrkptv.userservice.database.entity.User;
 import dev.shrkptv.userservice.database.repository.CardRepository;
 import dev.shrkptv.userservice.database.repository.UserRepository;
+import dev.shrkptv.userservice.dto.CardCreateDTO;
+import dev.shrkptv.userservice.dto.CardResponseDTO;
 import dev.shrkptv.userservice.dto.CardUpdateDTO;
 import dev.shrkptv.userservice.exception.CardNotFoundException;
 import dev.shrkptv.userservice.exception.UserNotFoundByIdException;
@@ -27,29 +29,35 @@ public class CardServiceImpl implements CardService {
 
     @Override
     @CachePut(value = "cards", key = "#result.id")
-    public Card createCard(Card card, Long userId) {
+    public CardResponseDTO createCard(CardCreateDTO cardCreateDTO, Long userId) {
         User user = userRepository.findUserById(userId).orElseThrow(() -> new UserNotFoundByIdException(userId));
+        Card card = cardMapper.toEntity(cardCreateDTO);
         card.setUser(user);
-        return cardRepository.save(card);
+        cardRepository.save(card);
+        return cardMapper.toDto(card);
     }
 
     @Override
     @Cacheable(value = "cards", key = "#id")
-    public Card getCard(Long id) {
-        return cardRepository.findCardById(id).orElseThrow(() -> new CardNotFoundException(id));
+    public CardResponseDTO getCard(Long id) {
+        Card card = cardRepository.findCardById(id).orElseThrow(() -> new CardNotFoundException(id));
+        return cardMapper.toDto(card);
     }
 
-    public List<Card> getCardList(List<Long> idList) {
-        return cardRepository.findCardsByIdIn(idList);
+    public List<CardResponseDTO> getCardList(List<Long> idList) {
+        return cardRepository.findCardsByIdIn(idList)
+                .stream()
+                .map(cardMapper::toDto)
+                .toList();
     }
 
     @Override
     @Transactional
     @CachePut(value = "cards", key = "#id")
-    public Card updateCard(Long id, CardUpdateDTO cardUpdateDTO) {
+    public CardResponseDTO updateCard(Long id, CardUpdateDTO cardUpdateDTO) {
         Card card = cardRepository.findCardById(id).orElseThrow(() -> new CardNotFoundException(id));
         cardMapper.updateEntityFromDto(cardUpdateDTO, card);
-        return card;
+        return cardMapper.toDto(card);
     }
 
     @Override

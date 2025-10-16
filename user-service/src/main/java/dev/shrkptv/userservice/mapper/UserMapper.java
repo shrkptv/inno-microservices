@@ -9,13 +9,10 @@ import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
-import java.util.List;
-
 @Mapper(componentModel = "spring", uses = CardMapper.class)
 public interface UserMapper {
     User toEntity(UserCreateDTO dto);
     UserResponseDTO toDto(User user);
-    List<UserResponseDTO> toDtoList(List<User> userList);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntityFromDto(UserUpdateDTO userUpdateDTO, @MappingTarget User user);

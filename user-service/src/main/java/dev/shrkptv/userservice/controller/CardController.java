@@ -1,6 +1,5 @@
 package dev.shrkptv.userservice.controller;
 
-import dev.shrkptv.userservice.database.entity.Card;
 import dev.shrkptv.userservice.dto.CardCreateDTO;
 import dev.shrkptv.userservice.dto.CardResponseDTO;
 import dev.shrkptv.userservice.dto.CardUpdateDTO;
@@ -8,6 +7,7 @@ import dev.shrkptv.userservice.mapper.CardMapper;
 import dev.shrkptv.userservice.services.CardService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,14 +31,14 @@ public class CardController {
             @Valid @RequestBody CardCreateDTO cardCreateDTO,
             @RequestParam Long userId)
     {
-        Card card = cardService.createCard(cardMapper.toEntity(cardCreateDTO), userId);
-        return ResponseEntity.status(201).body(cardMapper.toDto(card));
+        CardResponseDTO card = cardService.createCard(cardCreateDTO, userId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(card);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<CardResponseDTO> getCard(@PathVariable Long id)
     {
-        return ResponseEntity.ok(cardMapper.toDto(cardService.getCard(id)));
+        return ResponseEntity.ok(cardService.getCard(id));
     }
 
     @PutMapping("/{id}")
@@ -47,7 +47,7 @@ public class CardController {
             @Valid @RequestBody CardUpdateDTO cardUpdateDTO
             )
     {
-        return ResponseEntity.ok(cardMapper.toDto(cardService.updateCard(id, cardUpdateDTO)));
+        return ResponseEntity.ok(cardService.updateCard(id, cardUpdateDTO));
     }
 
     @DeleteMapping("/{id}")

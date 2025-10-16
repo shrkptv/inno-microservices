@@ -4,11 +4,13 @@ import dev.shrkptv.userservice.database.entity.Card;
 import dev.shrkptv.userservice.database.entity.User;
 import dev.shrkptv.userservice.database.repository.CardRepository;
 import dev.shrkptv.userservice.database.repository.UserRepository;
+import dev.shrkptv.userservice.dto.CardCreateDTO;
+import dev.shrkptv.userservice.dto.CardResponseDTO;
 import dev.shrkptv.userservice.dto.CardUpdateDTO;
 import dev.shrkptv.userservice.exception.CardNotFoundException;
 import dev.shrkptv.userservice.exception.UserNotFoundByIdException;
 import dev.shrkptv.userservice.mapper.CardMapper;
-import dev.shrkptv.userservice.services.CardService;
+import dev.shrkptv.userservice.services.impl.CardServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,31 +35,38 @@ class CardServiceTest {
     @Mock
     private CardMapper cardMapper;
     @InjectMocks
-    private CardService cardService;
+    private CardServiceImpl cardService;
 
     @Test
     @DisplayName("Create card for existing user")
     void testCreateCard() {
+        CardCreateDTO cardCreateDTO = new CardCreateDTO();
         User user = new User();
         user.setId(1L);
 
         Card card = new Card();
         card.setId(9L);
+        card.setUser(user);
+
+        CardResponseDTO cardResponseDTO = new CardResponseDTO();
+        cardResponseDTO.setId(9L);
 
         when(userRepository.findUserById(1L)).thenReturn(Optional.of(user));
         when(cardRepository.save(card)).thenReturn(card);
+        when(cardMapper.toEntity(cardCreateDTO)).thenReturn(card);
+        when(cardMapper.toDto(card)).thenReturn(cardResponseDTO);
 
-        assertEquals(card.getId(), cardService.createCard(card, 1L).getId());
+        assertEquals(cardResponseDTO.getId(), cardService.createCard(cardCreateDTO, 1L).getId());
     }
 
     @Test
     @DisplayName("Throw exception when creating card for non-existing user")
     void testCreateCardUserNotFound(){
-        Card card = new Card();
-        when(userRepository.findUserById(1L)).thenReturn(Optional.empty());
+        CardCreateDTO cardCreateDTO = new CardCreateDTO();
 
+        when(userRepository.findUserById(1L)).thenReturn(Optional.empty());
         assertThrows(UserNotFoundByIdException.class,
-                () -> cardService.createCard(card, 1L));
+                () -> cardService.createCard(cardCreateDTO, 1L));
     }
 
     @Test
@@ -66,6 +75,10 @@ class CardServiceTest {
         Card card = new Card();
         card.setId(10L);
 
+        CardResponseDTO cardResponseDTO = new CardResponseDTO();
+        cardResponseDTO.setId(10L);
+
+        when(cardMapper.toDto(card)).thenReturn(cardResponseDTO);
         when(cardRepository.findCardById(10L)).thenReturn(Optional.of(card));
 
         assertEquals(card.getId(), cardService.getCard(10L).getId());
@@ -88,9 +101,18 @@ class CardServiceTest {
         Card secondCard = new Card();
         secondCard.setId(2L);
 
-        when(cardRepository.findCardsByIdIn(List.of(1L, 2L))).thenReturn(List.of(firstCard, secondCard));
+        CardResponseDTO firstDto = new CardResponseDTO();
+        firstDto.setId(1L);
 
-        assertEquals(2, cardService.getCardList(List.of(1L, 2L)).size());
+        CardResponseDTO secondDto = new CardResponseDTO();
+        secondDto.setId(2L);
+
+        when(cardRepository.findCardsByIdIn(List.of(1L, 2L))).thenReturn(List.of(firstCard, secondCard));
+        when(cardMapper.toDto(firstCard)).thenReturn(firstDto);
+        when(cardMapper.toDto(secondCard)).thenReturn(secondDto);
+
+        List<CardResponseDTO> result = cardService.getCardList(List.of(1L, 2L));
+        assertEquals(2, result.size());
     }
 
     @Test
@@ -109,9 +131,15 @@ class CardServiceTest {
 
         CardUpdateDTO cardUpdateDTO = new CardUpdateDTO();
 
+        CardResponseDTO cardResponseDTO = new CardResponseDTO();
+        cardResponseDTO.setId(1L);
+
+        when(cardMapper.toDto(card)).thenReturn(cardResponseDTO);
         when(cardRepository.findCardById(1L)).thenReturn(Optional.of(card));
 
-        assertDoesNotThrow(() -> cardService.updateCard(1L, cardUpdateDTO));
+        CardResponseDTO result = cardService.updateCard(1L, cardUpdateDTO);
+        assertDoesNotThrow(() -> result);
+        assertEquals(cardResponseDTO.getId(), result.getId());
     }
 
     @Test
