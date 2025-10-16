@@ -30,6 +30,9 @@
         <java.version>21</java.version>
         <org.mapstruct.version>1.6.3</org.mapstruct.version>
         <lombok.mapstruct.version>0.2.0</lombok.mapstruct.version>
+        <sonar-maven-plugin>5.2.0.4988</sonar-maven-plugin>
+        <sonar.organization>shrkptv</sonar.organization>
+        <sonar.projectKey>shrkptv_inno-microservices_user-service</sonar.projectKey>
     </properties>
     <dependencies>
         <dependency>
@@ -120,6 +123,11 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>${sonar-maven-plugin}</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
