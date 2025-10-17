@@ -28,7 +28,7 @@ public class JwtProvider {
 
 
     public JwtProvider(
-            @Value("${jwt.secret}") String jwtSecret,
+            @Value("${JWT_SECRET}") String jwtSecret,
             @Value("${jwt.access-token.expiration}") Long accessTokenExpireTime,
             @Value("${jwt.refresh-token.expiration}") Long refreshTokenExpireTime
     ){
