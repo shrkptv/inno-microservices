@@ -9,8 +9,11 @@ import dev.shrkptv.authservice.exception.InvalidTokenException;
 import dev.shrkptv.authservice.security.JwtProvider;
 import dev.shrkptv.authservice.service.AuthService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -23,9 +26,12 @@ import org.springframework.stereotype.Service;
 public class AuthServiceImpl implements AuthService {
 
     private final AuthUserRepository authUserRepository;
-    private final AuthenticationManager authenticationManager;
     private final JwtProvider jwtProvider;
     private final PasswordEncoder passwordEncoder;
+
+    @Autowired
+    @Lazy
+    private final AuthenticationConfiguration authenticationConfiguration;
 
     @Override
     public UserDetails loadUserByUsername(String login) throws UsernameNotFoundException{
@@ -48,6 +54,13 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public LoginResponseDTO createAuthToken(LoginRequestDTO loginRequestDTO) {
+        AuthenticationManager authenticationManager;
+        try {
+            authenticationManager = authenticationConfiguration.getAuthenticationManager();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to obtain AuthenticationManager", e);
+        }
+
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequestDTO.getLogin(),
