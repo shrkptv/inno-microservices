@@ -1,10 +1,17 @@
 package dev.shrkptv.authservice.service;
 
 import dev.shrkptv.authservice.database.entity.AuthUser;
+import dev.shrkptv.authservice.dto.LoginRequestDTO;
+import dev.shrkptv.authservice.dto.LoginResponseDTO;
+import dev.shrkptv.authservice.dto.RegisterRequestDTO;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 public interface AuthService extends UserDetailsService {
-    boolean existsByLogin(String login);
+    AuthUser save(RegisterRequestDTO registerRequestDTO);
 
-    AuthUser save(AuthUser authUser);
+    LoginResponseDTO createAuthToken(LoginRequestDTO loginRequestDTO);
+
+    LoginResponseDTO refreshAuthToken(String refreshToken);
+
+    boolean validateToken(String token);
 }

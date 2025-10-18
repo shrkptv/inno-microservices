@@ -1,6 +1,5 @@
 package dev.shrkptv.authservice.security;
 
-import dev.shrkptv.authservice.database.entity.AuthUser;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
@@ -8,8 +7,6 @@ import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -22,9 +19,9 @@ import java.util.Date;
 @Slf4j
 @Component
 public class JwtProvider {
-    private SecretKey jwtSecret;
-    private Long accessTokenExpireTime;
-    private Long refreshTokenExpireTime;
+    private final SecretKey jwtSecret;
+    private final Long accessTokenExpireTime;
+    private final Long refreshTokenExpireTime;
 
 
     public JwtProvider(
