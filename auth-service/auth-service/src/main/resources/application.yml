@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: 'auth-service'
+  datasource:
+    url: jdbc:postgresql://localhost:5432/auth_db
+    username: postgres
+    password: innocourse
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+      show_sql: true
+server:
+  port: 8080
+jwt:
+  access-token:
+    expiration: 900000
+  refresh-token:
+    expiration: 86400000
