@@ -33,9 +33,17 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponseDTO> getUserBy(@PathVariable Long id) {
+    public ResponseEntity<UserResponseDTO> getUserById(@PathVariable Long id)
+    {
         UserResponseDTO user = userService.getUserById(id);
         return ResponseEntity.ok(user);
+    }
+
+    @GetMapping("/email")
+    public ResponseEntity<UserResponseDTO> getUserByEmail(@RequestParam String email)
+    {
+        User user = userService.getUserByEmail(email);
+        return ResponseEntity.ok(userMapper.toDto(user));
     }
 
     @GetMapping
