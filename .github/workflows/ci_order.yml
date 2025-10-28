@@ -82,6 +82,8 @@ jobs:
           merge-multiple: true
 
       - name: Run tests
+        env:
+          USER_SERVICE_URL: http://user-service:8081
         run: |
           chmod +x mvnw
           ./mvnw test
