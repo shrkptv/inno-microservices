@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/card-info")
+@RequestMapping("/api/v1/card-info")
 @RequiredArgsConstructor
 public class CardController {
     private final CardService cardService;
@@ -29,15 +29,13 @@ public class CardController {
     @PostMapping
     public ResponseEntity<CardResponseDTO> createCard(
             @Valid @RequestBody CardCreateDTO cardCreateDTO,
-            @RequestParam Long userId)
-    {
+            @RequestParam Long userId) {
         CardResponseDTO card = cardService.createCard(cardCreateDTO, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(card);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CardResponseDTO> getCard(@PathVariable Long id)
-    {
+    public ResponseEntity<CardResponseDTO> getCard(@PathVariable Long id) {
         return ResponseEntity.ok(cardService.getCard(id));
     }
 
@@ -45,14 +43,12 @@ public class CardController {
     public ResponseEntity<CardResponseDTO> updateCard(
             @PathVariable Long id,
             @Valid @RequestBody CardUpdateDTO cardUpdateDTO
-            )
-    {
+    ) {
         return ResponseEntity.ok(cardService.updateCard(id, cardUpdateDTO));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCard(@PathVariable Long id)
-    {
+    public ResponseEntity<Void> deleteCard(@PathVariable Long id) {
         cardService.deleteCard(id);
         return ResponseEntity.noContent().build();
     }

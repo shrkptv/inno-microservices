@@ -28,14 +28,13 @@ public class JwtProvider {
             @Value("${JWT_SECRET}") String jwtSecret,
             @Value("${jwt.access-token.expiration}") Long accessTokenExpireTime,
             @Value("${jwt.refresh-token.expiration}") Long refreshTokenExpireTime
-    ){
+    ) {
         this.jwtSecret = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
         this.accessTokenExpireTime = accessTokenExpireTime;
         this.refreshTokenExpireTime = refreshTokenExpireTime;
     }
 
-    private String generateToken(String login, Long expireTime)
-    {
+    private String generateToken(String login, Long expireTime) {
         Instant now = Instant.now();
         return Jwts.builder()
                 .subject(login)
@@ -45,15 +44,15 @@ public class JwtProvider {
                 .compact();
     }
 
-    public String generateRefreshToken(String login){
+    public String generateRefreshToken(String login) {
         return generateToken(login, refreshTokenExpireTime);
     }
 
-    public String generateAccessToken(String login){
+    public String generateAccessToken(String login) {
         return generateToken(login, accessTokenExpireTime);
     }
 
-    private boolean validateToken(String token){
+    private boolean validateToken(String token) {
         try {
             Jwts.parser()
                     .verifyWith(jwtSecret)
@@ -74,15 +73,15 @@ public class JwtProvider {
         return false;
     }
 
-    public boolean validateRefreshToken(String refreshToken){
+    public boolean validateRefreshToken(String refreshToken) {
         return validateToken(refreshToken);
     }
 
-    public boolean validateAccessToken(String accessToken){
+    public boolean validateAccessToken(String accessToken) {
         return validateToken(accessToken);
     }
 
-    public String getLoginFromToken(String token){
+    public String getLoginFromToken(String token) {
         return Jwts.parser()
                 .verifyWith(jwtSecret)
                 .build()
