@@ -1,5 +1,6 @@
-package dev.shrkptv.orderservice.integration;
+package dev.shrkptv.userservice.integration;
 
+import com.redis.testcontainers.RedisContainer;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -12,8 +13,11 @@ public abstract class AbstractIT {
     static PostgreSQLContainer<?> postgres =
             new PostgreSQLContainer<>("postgres:latest");
 
+    static RedisContainer redis =
+            new RedisContainer("redis:latest");
+
     static {
-        Startables.deepStart(postgres).join();
+        Startables.deepStart(postgres, redis).join();
     }
 
     @DynamicPropertySource
@@ -21,6 +25,8 @@ public abstract class AbstractIT {
         registry.add("spring.datasource.url", postgres::getJdbcUrl);
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
+        registry.add("spring.data.redis.host", redis::getHost);
+        registry.add("spring.data.redis.port", redis::getRedisPort);
     }
-}
 
+}
