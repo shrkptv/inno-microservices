@@ -3,13 +3,14 @@ package dev.shrkptv.orderservice.services.impl;
 import dev.shrkptv.orderservice.client.UserServiceClient;
 import dev.shrkptv.orderservice.database.entity.Order;
 import dev.shrkptv.orderservice.database.entity.OrderItem;
-import dev.shrkptv.orderservice.database.entity.OrderStatus;
+import dev.shrkptv.orderservice.database.enums.OrderStatus;
 import dev.shrkptv.orderservice.database.repository.OrderRepository;
 import dev.shrkptv.orderservice.dto.OrderCreateDTO;
 import dev.shrkptv.orderservice.dto.OrderResponseDTO;
 import dev.shrkptv.orderservice.dto.OrderUpdateDTO;
 import dev.shrkptv.orderservice.dto.UserResponseDTO;
 import dev.shrkptv.orderservice.exception.OrderNotFoundByIdException;
+import dev.shrkptv.orderservice.exception.UserNotFoundByEmailException;
 import dev.shrkptv.orderservice.mapper.OrderItemMapper;
 import dev.shrkptv.orderservice.mapper.OrderMapper;
 import dev.shrkptv.orderservice.services.OrderService;
@@ -30,12 +31,12 @@ public class OrderServiceImpl implements OrderService {
     private final UserServiceClient userServiceClient;
 
     @Override
-    public OrderResponseDTO createOrder(OrderCreateDTO orderCreateDTO)
-    {
+    @Transactional
+    public OrderResponseDTO createOrder(OrderCreateDTO orderCreateDTO) {
         UserResponseDTO userResponseDTO = userServiceClient.getUserByEmail(orderCreateDTO.getUserEmail());
 
         if (userResponseDTO == null || userResponseDTO.getId() == null)
-            throw new RuntimeException("User not found for email: " + orderCreateDTO.getUserEmail());
+            throw new UserNotFoundByEmailException(orderCreateDTO.getUserEmail());
 
         Order order = orderMapper.toEntity(orderCreateDTO);
         order.setUserId(userResponseDTO.getId());
@@ -53,6 +54,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public OrderResponseDTO getOrderById(Long id) {
         Order order = orderRepository.getOrderById(id).orElseThrow(() -> new OrderNotFoundByIdException(id));
         UserResponseDTO userResponseDTO = userServiceClient.getUserById(order.getUserId());
@@ -62,6 +64,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<OrderResponseDTO> getOrderListById(List<Long> idList) {
         return orderRepository.findOrderByIdIn(idList)
                 .stream()
@@ -70,6 +73,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<OrderResponseDTO> getOrderListByStatus(OrderStatus status) {
         return orderRepository.findAllByOrderStatus(status)
                 .stream()

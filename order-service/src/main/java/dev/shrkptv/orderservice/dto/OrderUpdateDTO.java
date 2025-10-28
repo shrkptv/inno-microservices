@@ -1,6 +1,6 @@
 package dev.shrkptv.orderservice.dto;
 
-import dev.shrkptv.orderservice.database.entity.OrderStatus;
+import dev.shrkptv.orderservice.database.enums.OrderStatus;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;

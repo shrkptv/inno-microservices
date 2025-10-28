@@ -1,5 +1,6 @@
 package dev.shrkptv.orderservice.database.entity;
 
+import dev.shrkptv.orderservice.database.enums.OrderStatus;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

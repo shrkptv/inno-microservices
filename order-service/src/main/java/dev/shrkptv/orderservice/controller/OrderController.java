@@ -1,13 +1,9 @@
 package dev.shrkptv.orderservice.controller;
 
-import dev.shrkptv.orderservice.client.UserServiceClient;
-import dev.shrkptv.orderservice.database.entity.OrderStatus;
-import dev.shrkptv.orderservice.database.repository.OrderRepository;
+import dev.shrkptv.orderservice.database.enums.OrderStatus;
 import dev.shrkptv.orderservice.dto.OrderCreateDTO;
 import dev.shrkptv.orderservice.dto.OrderResponseDTO;
 import dev.shrkptv.orderservice.dto.OrderUpdateDTO;
-import dev.shrkptv.orderservice.mapper.OrderItemMapper;
-import dev.shrkptv.orderservice.mapper.OrderMapper;
 import dev.shrkptv.orderservice.services.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -59,8 +55,7 @@ public class OrderController {
     @PutMapping("/{id}")
     public ResponseEntity<OrderResponseDTO> updateOrder(
             @PathVariable Long id,
-            @Valid @RequestBody OrderUpdateDTO orderUpdateDTO)
-    {
+            @Valid @RequestBody OrderUpdateDTO orderUpdateDTO) {
         OrderResponseDTO orderResponseDTO = orderService.updateOrder(id, orderUpdateDTO);
         return ResponseEntity.ok(orderResponseDTO);
     }
