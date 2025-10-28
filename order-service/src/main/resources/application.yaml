@@ -2,16 +2,15 @@ spring:
   application:
     name: 'order-service'
   datasource:
-    url: jdbc:postgresql://localhost:5432/orders_db
-    username: postgres
-    password: innocourse
-    driver-class-name: org.postgresql.Driver
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: ${DB_DRIVER}
   jpa:
     hibernate:
       ddl-auto: validate
 server:
-  port: 8082
+  port: ${SERVER_PORT}
 
-user:
-  service:
-    url: http://localhost:8081/api/users
+user-service:
+    url: ${USER_SERVICE_URL}
