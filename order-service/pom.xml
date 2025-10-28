@@ -33,6 +33,7 @@
         <spring-cloud.version>2025.0.0</spring-cloud.version>
         <wiremock.version>3.13.1</wiremock.version>
         <swagger.version>2.8.13</swagger.version>
+        <jackson.datatype.version>3.0.0-rc2</jackson.datatype.version>
         <sonar-maven-plugin>5.2.0.4988</sonar-maven-plugin>
         <sonar.organization>shrkptv</sonar.organization>
         <sonar.projectKey>shrkptv_inno-microservices_order-service</sonar.projectKey>
@@ -52,6 +53,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>tools.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>${jackson.datatype.version}</version>
         </dependency>
 
         <dependency>
