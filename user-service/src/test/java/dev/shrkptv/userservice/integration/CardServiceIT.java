@@ -10,9 +10,6 @@ import dev.shrkptv.userservice.services.impl.UserServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.LocalDate;
 
@@ -20,10 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@ActiveProfiles("test")
-@SpringBootTest
-@Testcontainers
-public class CardServiceIT {
+public class CardServiceIT extends AbstractIT{
 
     @Autowired
     private CardService cardService;

@@ -27,14 +27,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             HttpServletRequest request,
             HttpServletResponse response,
             FilterChain filterChain
-    )throws ServletException, IOException {
+    ) throws ServletException, IOException {
         String authorizationHeader = request.getHeader("Authorization");
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
         String jwt = authorizationHeader.substring(7);
-        if(jwtProvider.validateAccessToken(jwt)){
+        if (jwtProvider.validateAccessToken(jwt)) {
             String login = jwtProvider.getLoginFromToken(jwt);
             UserDetails user = authService.loadUserByUsername(login);
             UsernamePasswordAuthenticationToken authentication =

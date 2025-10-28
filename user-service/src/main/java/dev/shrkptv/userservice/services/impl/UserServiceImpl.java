@@ -27,6 +27,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @CachePut(value = "users", key = "#result.id")
+    @Transactional
     public UserResponseDTO createUser(UserCreateDTO userCreateDTO) {
         User user = userMapper.toEntity(userCreateDTO);
         if (userRepository.findUserByEmail(user.getEmail()).isPresent()) {

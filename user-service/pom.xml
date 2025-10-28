@@ -30,6 +30,8 @@
         <java.version>21</java.version>
         <org.mapstruct.version>1.6.3</org.mapstruct.version>
         <lombok.mapstruct.version>0.2.0</lombok.mapstruct.version>
+        <jackson-datatype.version>3.0.0-rc2</jackson-datatype.version>
+        <redis-test.version>2.2.4</redis-test.version>
         <sonar-maven-plugin>5.2.0.4988</sonar-maven-plugin>
         <sonar.organization>shrkptv</sonar.organization>
         <sonar.projectKey>shrkptv_inno-microservices_user-service</sonar.projectKey>
@@ -39,7 +41,12 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>com.redis</groupId>
+            <artifactId>testcontainers-redis</artifactId>
+            <version>${redis-test.version}</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
@@ -54,6 +61,12 @@
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>tools.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>${jackson-datatype.version}</version>
         </dependency>
 
         <dependency>

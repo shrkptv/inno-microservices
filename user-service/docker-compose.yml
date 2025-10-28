@@ -4,13 +4,11 @@ services:
   user-service:
     build: .
     container_name: user-service
-#    networks:
-#      - backend
     ports:
-      - "8081:8081"
+      - ${SERVER_PORT}:8081
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/userdatadb
-      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATASOURCE_URL: ${DB_URL}
+      SPRING_DATA_REDIS_HOST: ${REDIS_HOST}
     depends_on:
       - db
       - redis
@@ -19,11 +17,11 @@ services:
     image: postgres:15
     container_name: user-service-db
     environment:
-      POSTGRES_DB: userdatadb
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: innocourse
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "5433:5432"
+      - ${DB_PORT}:5432
     volumes:
       - user-service-db-data:/var/lib/postgresql/data
 
@@ -31,11 +29,11 @@ services:
     image: redis:7
     container_name: redis_
     ports:
-      - "6379:6379"
+      - ${REDIS_PORT}:6379
     volumes:
       - user-service-redis-data:/data
     environment:
-      - REDIS_PASSWORD=12345
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
 
 volumes:
   user-service-db-data:

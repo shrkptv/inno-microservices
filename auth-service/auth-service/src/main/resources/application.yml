@@ -2,18 +2,24 @@ spring:
   application:
     name: 'auth-service'
   datasource:
-    url: jdbc:postgresql://localhost:5432/auth_db
-    username: postgres
-    password: innocourse
-    driver-class-name: org.postgresql.Driver
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: ${DB_DRIVER}
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
       show_sql: true
+  docker:
+    compose:
+      enabled: true
+      file: .\auth-service\auth-service\docker-compose.yml
 server:
-  port: 8080
+  port: ${SERVER_PORT}
 jwt:
   access-token:
     expiration: 900000
   refresh-token:
     expiration: 86400000
+user-service:
+  url: ${USER_SERVICE_URL}

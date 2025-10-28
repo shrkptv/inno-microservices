@@ -37,8 +37,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@SpringBootTest
-@Testcontainers
 public class OrderServiceIT extends AbstractIT {
 
     static WireMockServer wireMockServer = new WireMockServer(8081);
@@ -64,7 +62,7 @@ public class OrderServiceIT extends AbstractIT {
 
         configureFor("localhost", wireMockServer.port());
 
-        stubFor(get(urlPathEqualTo("/api/users/email"))
+        stubFor(get(urlPathEqualTo("/api/v1/users/email"))
                 .withQueryParam("email", equalTo("test@gmail.com"))
                 .willReturn(okJson("""
                             {
@@ -73,11 +71,11 @@ public class OrderServiceIT extends AbstractIT {
                             }
                         """)));
 
-        stubFor(get(urlPathEqualTo("/api/users/email"))
+        stubFor(get(urlPathEqualTo("/api/v1/users/email"))
                 .withQueryParam("email", equalTo("testfail@gmail.com"))
                 .willReturn(aResponse().withStatus(HttpStatus.NOT_FOUND.value())));
 
-        stubFor(get(urlMatching("/api/users/1"))
+        stubFor(get(urlMatching("/api/v1/users/1"))
                 .willReturn(okJson("""
                             {
                                 "id": 1,
@@ -104,7 +102,7 @@ public class OrderServiceIT extends AbstractIT {
         assertEquals(1, orderResponseDTO.getUser().getId());
         assertEquals(1, orderRepository.findAll().size());
 
-        verify(getRequestedFor(urlPathEqualTo("/api/users/email"))
+        verify(getRequestedFor(urlPathEqualTo("/api/v1/users/email"))
                 .withQueryParam("email", equalTo("test@gmail.com")));
     }
 
@@ -116,7 +114,7 @@ public class OrderServiceIT extends AbstractIT {
 
         assertThrows(RuntimeException.class, () -> orderService.createOrder(orderCreateDTO));
 
-        verify(getRequestedFor(urlPathEqualTo("/api/users/email"))
+        verify(getRequestedFor(urlPathEqualTo("/api/v1/users/email"))
                 .withQueryParam("email", equalTo("testfail@gmail.com")));
     }
 
