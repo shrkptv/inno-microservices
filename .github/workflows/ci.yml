@@ -82,7 +82,6 @@ jobs:
           merge-multiple: true
 
       - name: Run tests
-        env:
         run: |
           chmod +x mvnw
           ./mvnw test
