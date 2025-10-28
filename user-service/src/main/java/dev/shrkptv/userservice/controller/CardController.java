@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class CardController {
     private final CardService cardService;
-    private final CardMapper cardMapper;
 
     @PostMapping
     public ResponseEntity<CardResponseDTO> createCard(

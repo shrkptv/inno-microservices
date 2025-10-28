@@ -26,7 +26,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
-    private final UserMapper userMapper;
 
     @PostMapping
     public ResponseEntity<UserResponseDTO> createUser(@Valid @RequestBody UserCreateDTO userCreateDTO)
@@ -45,8 +44,8 @@ public class UserController {
     @GetMapping("/email")
     public ResponseEntity<UserResponseDTO> getUserByEmail(@RequestParam String email)
     {
-        User user = userService.getUserByEmail(email);
-        return ResponseEntity.ok(userMapper.toDto(user));
+        UserResponseDTO user = userService.getUserByEmail(email);
+        return ResponseEntity.ok(user);
     }
 
     @GetMapping
