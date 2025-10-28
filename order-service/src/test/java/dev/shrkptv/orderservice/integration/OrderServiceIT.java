@@ -2,7 +2,7 @@ package dev.shrkptv.orderservice.integration;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import dev.shrkptv.orderservice.database.entity.Order;
-import dev.shrkptv.orderservice.database.entity.OrderStatus;
+import dev.shrkptv.orderservice.database.enums.OrderStatus;
 import dev.shrkptv.orderservice.database.repository.OrderRepository;
 import dev.shrkptv.orderservice.dto.OrderCreateDTO;
 import dev.shrkptv.orderservice.dto.OrderResponseDTO;
@@ -17,8 +17,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.LocalDate;
@@ -41,13 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @Testcontainers
-public class OrderServiceIT {
-
-    @Container
-    static PostgreSQLContainer<?> postgreSQLContainer = new  PostgreSQLContainer<>("postgres:latest")
-            .withDatabaseName("order_service")
-            .withUsername("test")
-            .withPassword("test");
+public class OrderServiceIT extends AbstractIT {
 
     static WireMockServer wireMockServer = new WireMockServer(8081);
 
@@ -58,12 +50,12 @@ public class OrderServiceIT {
     private OrderRepository orderRepository;
 
     @BeforeAll
-    static void startWireMock(){
+    static void startWireMock() {
         wireMockServer.start();
     }
 
     @AfterAll
-    static void stopWireMock(){
+    static void stopWireMock() {
         wireMockServer.stop();
     }
 
@@ -75,11 +67,11 @@ public class OrderServiceIT {
         stubFor(get(urlPathEqualTo("/api/users/email"))
                 .withQueryParam("email", equalTo("test@gmail.com"))
                 .willReturn(okJson("""
-                    {
-                        "id": 1,
-                        "email": "test@gmail.com"
-                    }
-                """)));
+                            {
+                                "id": 1,
+                                "email": "test@gmail.com"
+                            }
+                        """)));
 
         stubFor(get(urlPathEqualTo("/api/users/email"))
                 .withQueryParam("email", equalTo("testfail@gmail.com"))
@@ -87,11 +79,11 @@ public class OrderServiceIT {
 
         stubFor(get(urlMatching("/api/users/1"))
                 .willReturn(okJson("""
-                    {
-                        "id": 1,
-                        "email": "test@gmail.com"
-                    }
-                """)));
+                            {
+                                "id": 1,
+                                "email": "test@gmail.com"
+                            }
+                        """)));
     }
 
     @AfterEach
@@ -102,7 +94,7 @@ public class OrderServiceIT {
 
     @Test
     @DisplayName("Create new order")
-    void createOrder(){
+    void createOrder() {
         OrderCreateDTO orderCreateDTO = new OrderCreateDTO();
         orderCreateDTO.setUserEmail("test@gmail.com");
         orderCreateDTO.setItems(List.of());
@@ -118,8 +110,8 @@ public class OrderServiceIT {
 
     @Test
     @DisplayName("Throw exception when user not found by email")
-    void createOrder_userNotFound(){
-        OrderCreateDTO orderCreateDTO= new OrderCreateDTO();
+    void createOrder_userNotFound() {
+        OrderCreateDTO orderCreateDTO = new OrderCreateDTO();
         orderCreateDTO.setUserEmail("testfail@gmail.com");
 
         assertThrows(RuntimeException.class, () -> orderService.createOrder(orderCreateDTO));
@@ -130,7 +122,7 @@ public class OrderServiceIT {
 
     @Test
     @DisplayName("Update order status")
-    void getOrderById(){
+    void getOrderById() {
         Order order = new Order();
         order.setUserId(1L);
         order.setOrderStatus(OrderStatus.NEW);
@@ -148,7 +140,7 @@ public class OrderServiceIT {
 
     @Test
     @DisplayName("Delete order by id")
-    void deleteOrder(){
+    void deleteOrder() {
         Order order = new Order();
         order.setOrderStatus(OrderStatus.NEW);
         order.setCreationDate(LocalDate.now());

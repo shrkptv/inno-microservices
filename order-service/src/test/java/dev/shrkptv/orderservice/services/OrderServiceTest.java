@@ -3,7 +3,7 @@ package dev.shrkptv.orderservice.services;
 import dev.shrkptv.orderservice.client.UserServiceClient;
 import dev.shrkptv.orderservice.database.entity.Order;
 import dev.shrkptv.orderservice.database.entity.OrderItem;
-import dev.shrkptv.orderservice.database.entity.OrderStatus;
+import dev.shrkptv.orderservice.database.enums.OrderStatus;
 import dev.shrkptv.orderservice.database.repository.OrderRepository;
 import dev.shrkptv.orderservice.dto.OrderCreateDTO;
 import dev.shrkptv.orderservice.dto.OrderItemCreateDTO;
@@ -21,7 +21,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
