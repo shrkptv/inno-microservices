@@ -1,25 +1,26 @@
 version: '3.9'
 
 services:
-  user-service:
+  auth-service:
     build: .
     container_name: auth-service
     ports:
-      - "8080:8080"
+      - ${SERVER_PORT}:8000
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/auth_db
+      SPRING_DATASOURCE_URL: ${DB_URL}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
     depends_on:
       - db
 
   db:
-    image: postgres:18
+    image: postgres:latest
     container_name: auth-service-db
     environment:
-      POSTGRES_DB: auth_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: innocourse
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "5432:5432"
+      - ${DB_PORT}:5432
     volumes:
       - auth-service-db-data:/var/lib/postgresql/data
 
