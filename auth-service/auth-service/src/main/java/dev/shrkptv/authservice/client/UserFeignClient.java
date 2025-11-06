@@ -1,6 +1,5 @@
 package dev.shrkptv.authservice.client;
 
-import dev.shrkptv.authservice.dto.RegisterResponseDTO;
 import dev.shrkptv.authservice.dto.UserCreateRequestDTO;
 import dev.shrkptv.authservice.dto.UserResponseDTO;
 import jakarta.validation.Valid;
