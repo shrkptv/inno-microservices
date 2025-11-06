@@ -1,16 +1,20 @@
 package dev.shrkptv.authservice.service.impl;
 
+import dev.shrkptv.authservice.client.UserFeignClient;
 import dev.shrkptv.authservice.database.entity.AuthUser;
 import dev.shrkptv.authservice.database.repository.AuthUserRepository;
 import dev.shrkptv.authservice.dto.LoginRequestDTO;
 import dev.shrkptv.authservice.dto.LoginResponseDTO;
 import dev.shrkptv.authservice.dto.RegisterRequestDTO;
+import dev.shrkptv.authservice.dto.UserCreateRequestDTO;
+import dev.shrkptv.authservice.dto.UserResponseDTO;
+import dev.shrkptv.authservice.exception.FailedRegistrationException;
 import dev.shrkptv.authservice.exception.InvalidTokenException;
 import dev.shrkptv.authservice.security.JwtProvider;
 import dev.shrkptv.authservice.service.AuthService;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -23,14 +27,13 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthServiceImpl implements AuthService {
 
     private final AuthUserRepository authUserRepository;
     private final JwtProvider jwtProvider;
     private final PasswordEncoder passwordEncoder;
-
-    @Autowired
-    @Lazy
+    private final UserFeignClient userFeignClient;
     private final AuthenticationConfiguration authenticationConfiguration;
 
     @Override
@@ -46,10 +49,38 @@ public class AuthServiceImpl implements AuthService {
             throw new UsernameNotFoundException(registerRequestDTO.getLogin());
         }
 
+        UserCreateRequestDTO userCreateRequestDTO = new UserCreateRequestDTO();
+        userCreateRequestDTO.setName(registerRequestDTO.getName());
+        userCreateRequestDTO.setSurname(registerRequestDTO.getSurname());
+        userCreateRequestDTO.setBirthDate(registerRequestDTO.getBirthDate());
+        userCreateRequestDTO.setEmail(registerRequestDTO.getLogin());
+
         AuthUser authUser = new AuthUser();
         authUser.setLogin(registerRequestDTO.getLogin());
         authUser.setPassword(passwordEncoder.encode(registerRequestDTO.getPassword()));
-        return authUserRepository.save(authUser);
+
+        Long userId = null;
+
+        try {
+            UserResponseDTO createdUser = userFeignClient.createUser(userCreateRequestDTO).getBody();
+            userId = createdUser.getId();
+            return authUserRepository.save(authUser);
+        }
+        catch (FeignException e){
+            log.error("FeignException while creating user in user-service: {}", e.getMessage(), e);
+            throw new FailedRegistrationException();
+        }
+        catch (Exception e){
+            log.error("Exception while creating auth user in auth-service: {}", e.getMessage(), e);
+            try {
+                if(userId != null){
+                    userFeignClient.deleteUser(userId);
+                }
+            } catch (FeignException fe) {
+                log.error("FeignException during delete in user-service: {}", fe.getMessage(), fe);
+            }
+            throw new FailedRegistrationException();
+        }
     }
 
     @Override
