@@ -27,4 +27,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<Object> handleFailedRegistration(FailedRegistrationException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("Error", ex.getMessage()));
     }
+
+    @ExceptionHandler
+    public ResponseEntity<Object> handleOtherExceptions(Exception ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("Error", "Internal error: " + ex.getMessage()));
+    }
 }

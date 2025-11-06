@@ -7,10 +7,12 @@ import dev.shrkptv.authservice.dto.LoginRequestDTO;
 import dev.shrkptv.authservice.dto.LoginResponseDTO;
 import dev.shrkptv.authservice.dto.RegisterRequestDTO;
 import dev.shrkptv.authservice.dto.UserCreateRequestDTO;
+import dev.shrkptv.authservice.dto.UserResponseDTO;
 import dev.shrkptv.authservice.exception.FailedRegistrationException;
 import dev.shrkptv.authservice.exception.InvalidTokenException;
 import dev.shrkptv.authservice.security.JwtProvider;
 import dev.shrkptv.authservice.service.AuthService;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,23 +51,36 @@ public class AuthServiceImpl implements AuthService {
             throw new UsernameNotFoundException(registerRequestDTO.getLogin());
         }
 
+        UserCreateRequestDTO userCreateRequestDTO = new UserCreateRequestDTO();
+        userCreateRequestDTO.setName(registerRequestDTO.getName());
+        userCreateRequestDTO.setSurname(registerRequestDTO.getSurname());
+        userCreateRequestDTO.setBirthDate(registerRequestDTO.getBirthDate());
+        userCreateRequestDTO.setEmail(registerRequestDTO.getLogin());
+
         AuthUser authUser = new AuthUser();
         authUser.setLogin(registerRequestDTO.getLogin());
         authUser.setPassword(passwordEncoder.encode(registerRequestDTO.getPassword()));
-        AuthUser savedAuthUser = authUserRepository.save(authUser);
 
-        try{
-            UserCreateRequestDTO userCreateRequestDTO = new UserCreateRequestDTO();
-            userCreateRequestDTO.setName(registerRequestDTO.getName());
-            userCreateRequestDTO.setSurname(registerRequestDTO.getSurname());
-            userCreateRequestDTO.setBirthDate(registerRequestDTO.getBirthDate());
-            userCreateRequestDTO.setEmail(registerRequestDTO.getLogin());
+        Long userId = null;
 
-            userFeignClient.createUser(userCreateRequestDTO);
-            return savedAuthUser;
-        } catch (Exception e){
-            log.error("User-service error: {}", e.getMessage(), e);
-            authUserRepository.delete(authUser);
+        try {
+            UserResponseDTO createdUser = userFeignClient.createUser(userCreateRequestDTO).getBody();
+            userId = createdUser.getId();
+            return authUserRepository.save(authUser);
+        }
+        catch (FeignException e){
+            log.error("FeignException while creating user in user-service: {}", e.getMessage(), e);
+            throw new FailedRegistrationException();
+        }
+        catch (Exception e){
+            log.error("Exception while creating auth user in auth-service: {}", e.getMessage(), e);
+            try {
+                if(userId != null){
+                    userFeignClient.deleteUser(userId);
+                }
+            } catch (FeignException fe) {
+                log.error("FeignException during delete in user-service: {}", fe.getMessage(), fe);
+            }
             throw new FailedRegistrationException();
         }
     }
