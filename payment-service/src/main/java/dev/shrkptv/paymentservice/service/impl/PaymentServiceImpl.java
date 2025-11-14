@@ -42,6 +42,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<PaymentResponseDTO> getPaymentsByOrderId(Long orderId) {
         return paymentRepository.findAllByOrderId(orderId)
                 .stream()
@@ -50,6 +51,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<PaymentResponseDTO> getPaymentsByUserId(Long userId) {
         return paymentRepository.findAllByUserId(userId)
                 .stream()
@@ -58,6 +60,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<PaymentResponseDTO> getPaymentsByStatuses(List<PaymentStatus> statuses) {
         return paymentRepository.findAllByStatusIn(statuses)
                 .stream()
@@ -66,6 +69,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public BigDecimal getTotalAmountForPeriod(LocalDateTime startDate, LocalDateTime endDate) {
         BigDecimal totalAmount = paymentRepository.getTotalAmount(startDate, endDate);
         return totalAmount != null ? totalAmount : BigDecimal.ZERO;
