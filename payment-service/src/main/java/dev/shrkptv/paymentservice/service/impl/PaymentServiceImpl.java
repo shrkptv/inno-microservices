@@ -6,6 +6,7 @@ import dev.shrkptv.paymentservice.database.enums.PaymentStatus;
 import dev.shrkptv.paymentservice.database.repository.PaymentRepository;
 import dev.shrkptv.paymentservice.dto.PaymentCreateDTO;
 import dev.shrkptv.paymentservice.dto.PaymentResponseDTO;
+import dev.shrkptv.paymentservice.dto.TotalAmountDTO;
 import dev.shrkptv.paymentservice.mapper.PaymentMapper;
 import dev.shrkptv.paymentservice.service.PaymentService;
 import lombok.RequiredArgsConstructor;
@@ -71,7 +72,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     @Transactional(readOnly = true)
     public BigDecimal getTotalAmountForPeriod(LocalDateTime startDate, LocalDateTime endDate) {
-        BigDecimal totalAmount = paymentRepository.getTotalAmount(startDate, endDate);
-        return totalAmount != null ? totalAmount : BigDecimal.ZERO;
+        TotalAmountDTO totalAmount = paymentRepository.getTotalAmount(startDate, endDate);
+        return totalAmount != null ? totalAmount.getTotalAmount() : BigDecimal.ZERO;
     }
 }

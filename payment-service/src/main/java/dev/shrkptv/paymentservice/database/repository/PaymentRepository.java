@@ -2,6 +2,7 @@ package dev.shrkptv.paymentservice.database.repository;
 
 import dev.shrkptv.paymentservice.database.entity.Payment;
 import dev.shrkptv.paymentservice.database.enums.PaymentStatus;
+import dev.shrkptv.paymentservice.dto.TotalAmountDTO;
 import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
@@ -23,5 +24,5 @@ public interface PaymentRepository extends MongoRepository<Payment, String> {
             "{ $match: { timestamp: { $gte: ?0, $lte: ?1 }, status: 'SUCCESS' } }",
             "{ $group: { _id: null, total: { $sum: '$payment_amount' } } }"
     })
-    BigDecimal getTotalAmount(LocalDateTime startDate, LocalDateTime endDate);
+    TotalAmountDTO getTotalAmount(LocalDateTime startDate, LocalDateTime endDate);
 }
