@@ -1,5 +1,6 @@
 package dev.shrkptv.paymentservice.database.entity;
 
+import dev.shrkptv.paymentservice.database.enums.PaymentStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,14 +15,14 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Getter
 @Setter
-@Document(collection="payments")
+@Document(collection = "payments")
 public class Payment {
     @Id
     private String id;
 
     private Long orderId;
     private Long userId;
-    private String status;
+    private PaymentStatus status;
     private LocalDateTime timestamp;
     private BigDecimal paymentAmount;
 }
