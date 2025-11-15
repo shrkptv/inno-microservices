@@ -8,6 +8,7 @@ import dev.shrkptv.paymentservice.dto.PaymentCreateDTO;
 import dev.shrkptv.paymentservice.dto.PaymentResponseDTO;
 import dev.shrkptv.paymentservice.dto.TotalAmountDTO;
 import dev.shrkptv.paymentservice.mapper.PaymentMapper;
+import dev.shrkptv.paymentservice.service.PaymentProducer;
 import dev.shrkptv.paymentservice.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentRepository paymentRepository;
     private final PaymentMapper paymentMapper;
     private final ExternalAPIClient externalAPIClient;
+    private final PaymentProducer paymentProducer;
 
     @Override
     @Transactional
@@ -39,6 +41,7 @@ public class PaymentServiceImpl implements PaymentService {
         payment.setTimestamp(LocalDateTime.now());
 
         Payment createdPayment = paymentRepository.save(payment);
+        paymentProducer.sendPaymentCreatedEvent(createdPayment);
         return paymentMapper.toDTO(createdPayment);
     }
 
