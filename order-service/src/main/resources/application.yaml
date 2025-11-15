@@ -8,6 +8,8 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+  kafka:
+    bootstrap-servers: ${BOOTSTRAP_SERVERS}
 server:
   port: ${SERVER_PORT}
 
