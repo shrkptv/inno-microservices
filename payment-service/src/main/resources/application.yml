@@ -8,6 +8,10 @@ spring:
     bootstrap-servers: ${BOOTSTRAP_SERVERS}
     consumer:
       group-id: ${CONSUMER_GROUP_ID}
+  docker:
+    compose:
+      enabled: true
+      file: .\user-service\docker-compose.yml
 
 server:
   port: ${SERVER_PORT}
