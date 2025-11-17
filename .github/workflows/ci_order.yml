@@ -1,4 +1,4 @@
-name: CI Pipeline Order
+name: CI Pipeline Order Service
 
 on:
   push:
@@ -15,15 +15,7 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:18
-        ports:
-          - 5432:5432
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: innocourse
-          POSTGRES_DB: orders_db
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -53,19 +45,15 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     needs: build
-    services:
-      postgres:
-        image: postgres:18
-        ports:
-          - 5432:5432
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: innocourse
-          POSTGRES_DB: orders_db
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+
+      - name: Enable Docker (Required for Testcontainers)
+        run: |
+          sudo systemctl start docker
+          docker --version
 
       - name: Set up JDK 21
         uses: actions/setup-java@v5
@@ -78,11 +66,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: order-service-build-artifacts
-          path: order-service/target
+          path: target
           merge-multiple: true
 
       - name: Run tests
         env:
+          TESTCONTAINERS_RYUK_DISABLED: "false"
+          TESTCONTAINERS_CHECKS_DISABLE: "true"
           USER_SERVICE_URL: http://user-service:8081
         run: |
           chmod +x mvnw
@@ -93,13 +83,14 @@ jobs:
         with:
           name: order-service-test-artifacts
           path: |
-            order-service/target/surefire-reports/  
-
+            order-service/target/surefire-reports/
+            order-service/target/failsafe-reports/
 
   sonar:
     name: Code Analysis (SonarQube)
     runs-on: ubuntu-latest
     needs: test
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3

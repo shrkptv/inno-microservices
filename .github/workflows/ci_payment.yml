@@ -3,7 +3,8 @@ name: CI Pipeline Payment Service
 on:
   push:
     branches:
-      - '*'
+      - master
+      - paymentservice
   pull_request:
 
 defaults:
