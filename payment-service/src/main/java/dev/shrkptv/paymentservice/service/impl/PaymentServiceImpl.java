@@ -8,7 +8,7 @@ import dev.shrkptv.paymentservice.dto.PaymentCreateDTO;
 import dev.shrkptv.paymentservice.dto.PaymentResponseDTO;
 import dev.shrkptv.paymentservice.dto.TotalAmountDTO;
 import dev.shrkptv.paymentservice.mapper.PaymentMapper;
-import dev.shrkptv.paymentservice.service.PaymentProducer;
+import dev.shrkptv.paymentservice.service.kafka.PaymentProducer;
 import dev.shrkptv.paymentservice.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,7 +30,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Transactional
     public PaymentResponseDTO createPayment(PaymentCreateDTO paymentCreateDTO) {
         Payment payment = paymentMapper.toEntity(paymentCreateDTO);
-        int statusNumber = Integer.parseInt(externalAPIClient.generateRandomNumber());
+        int statusNumber = Integer.parseInt(externalAPIClient.generateRandomNumber().trim());
 
         if (statusNumber % 2 == 0) {
             payment.setStatus(PaymentStatus.SUCCESS);

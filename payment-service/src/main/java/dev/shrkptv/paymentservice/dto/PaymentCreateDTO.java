@@ -1,15 +1,11 @@
 package dev.shrkptv.paymentservice.dto;
 
-import dev.shrkptv.paymentservice.database.enums.PaymentStatus;
-import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -20,5 +16,5 @@ public class PaymentCreateDTO {
     private Long userId;
 
     @Positive(message = "The amount is greater than zero")
-    private BigDecimal amount;
+    private BigDecimal paymentAmount;
 }

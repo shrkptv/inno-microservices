@@ -13,13 +13,12 @@ import dev.shrkptv.orderservice.exception.OrderNotFoundByIdException;
 import dev.shrkptv.orderservice.exception.UserNotFoundByEmailException;
 import dev.shrkptv.orderservice.mapper.OrderItemMapper;
 import dev.shrkptv.orderservice.mapper.OrderMapper;
-import dev.shrkptv.orderservice.services.OrderProducer;
+import dev.shrkptv.orderservice.services.kafka.OrderProducer;
 import dev.shrkptv.orderservice.services.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 

@@ -21,6 +21,9 @@ public class KafkaConsumer {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
+    @Value("${spring.kafka.consumer.group-id}")
+    private String groupId;
+
     @Bean
     public ConsumerFactory<String, Object> consumerFactory() {
         Map<String, Object> props = new HashMap<>();
@@ -29,13 +32,15 @@ public class KafkaConsumer {
                 bootstrapServers);
         props.put(
                 ConsumerConfig.GROUP_ID_CONFIG,
-                "payment-service-group");
+                groupId);
         props.put(
                 ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
                 StringDeserializer.class);
         props.put(
                 ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
                 JsonDeserializer.class);
+        props.put(JsonDeserializer.TRUSTED_PACKAGES,
+                "dev.shrkptv.paymentservice.event");
         return new DefaultKafkaConsumerFactory<>(props);
     }
 

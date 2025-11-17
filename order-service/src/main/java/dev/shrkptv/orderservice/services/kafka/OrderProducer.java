@@ -1,4 +1,4 @@
-package dev.shrkptv.orderservice.services;
+package dev.shrkptv.orderservice.services.kafka;
 
 import dev.shrkptv.orderservice.database.entity.Order;
 import dev.shrkptv.orderservice.event.OrderCreatedEvent;

@@ -7,7 +7,6 @@ import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -22,7 +21,7 @@ public interface PaymentRepository extends MongoRepository<Payment, String> {
 
     @Aggregation(pipeline = {
             "{ $match: { timestamp: { $gte: ?0, $lte: ?1 }, status: 'SUCCESS' } }",
-            "{ $group: { _id: null, total: { $sum: '$payment_amount' } } }"
+            "{ $group: { _id: null, totalAmount: { $sum: '$payment_amount' } } }"
     })
     TotalAmountDTO getTotalAmount(LocalDateTime startDate, LocalDateTime endDate);
 }

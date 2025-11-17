@@ -1,4 +1,4 @@
-package dev.shrkptv.paymentservice.service;
+package dev.shrkptv.paymentservice.service.kafka;
 
 import dev.shrkptv.paymentservice.database.entity.Payment;
 import dev.shrkptv.paymentservice.event.PaymentCreatedEvent;
@@ -13,9 +13,9 @@ public class PaymentProducer {
 
     public void sendPaymentCreatedEvent(Payment payment) {
         PaymentCreatedEvent event = new PaymentCreatedEvent();
-        event.setOrderId(event.getOrderId());
+        event.setOrderId(payment.getOrderId());
         event.setStatus(payment.getStatus().name());
 
-        kafkaTemplate.send("payment-topic", event);
+        kafkaTemplate.send("payment-events", event);
     }
 }
