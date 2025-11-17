@@ -14,6 +14,7 @@ import dev.shrkptv.orderservice.exception.OrderNotFoundByIdException;
 import dev.shrkptv.orderservice.mapper.OrderItemMapper;
 import dev.shrkptv.orderservice.mapper.OrderMapper;
 import dev.shrkptv.orderservice.services.impl.OrderServiceImpl;
+import dev.shrkptv.orderservice.services.kafka.OrderProducer;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,6 +41,8 @@ class OrderServiceTest {
     private OrderItemMapper orderItemMapper;
     @Mock
     private  UserServiceClient userServiceClient;
+    @Mock
+    private OrderProducer orderProducer;
     @InjectMocks
     private OrderServiceImpl orderService;
 
@@ -81,6 +84,7 @@ class OrderServiceTest {
         verify(orderItemMapper).toEntityList(orderCreateDTO.getItems());
         verify(orderRepository).save(order);
         verify(orderMapper).toDto(order);
+        verify(orderProducer).sendCreateOrderEvent(order);
     }
 
     @Test

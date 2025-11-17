@@ -1,6 +1,5 @@
 package dev.shrkptv.orderservice.integration;
 
-import com.github.tomakehurst.wiremock.WireMockServer;
 import dev.shrkptv.orderservice.database.entity.Order;
 import dev.shrkptv.orderservice.database.enums.OrderStatus;
 import dev.shrkptv.orderservice.database.repository.OrderRepository;
@@ -10,14 +9,11 @@ import dev.shrkptv.orderservice.dto.OrderUpdateDTO;
 import dev.shrkptv.orderservice.services.OrderService;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -25,21 +21,17 @@ import java.util.List;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class OrderServiceIT extends AbstractIT {
-
-    static WireMockServer wireMockServer = new WireMockServer(8081);
 
     @Autowired
     private OrderService orderService;
@@ -47,10 +39,6 @@ public class OrderServiceIT extends AbstractIT {
     @Autowired
     private OrderRepository orderRepository;
 
-    @BeforeAll
-    static void startWireMock() {
-        wireMockServer.start();
-    }
 
     @AfterAll
     static void stopWireMock() {
@@ -62,7 +50,7 @@ public class OrderServiceIT extends AbstractIT {
 
         configureFor("localhost", wireMockServer.port());
 
-        stubFor(get(urlPathEqualTo("/api/v1/users/email"))
+        stubFor(get(urlPathEqualTo("/email"))
                 .withQueryParam("email", equalTo("test@gmail.com"))
                 .willReturn(okJson("""
                             {
@@ -71,11 +59,11 @@ public class OrderServiceIT extends AbstractIT {
                             }
                         """)));
 
-        stubFor(get(urlPathEqualTo("/api/v1/users/email"))
+        stubFor(get(urlPathEqualTo("/email"))
                 .withQueryParam("email", equalTo("testfail@gmail.com"))
                 .willReturn(aResponse().withStatus(HttpStatus.NOT_FOUND.value())));
 
-        stubFor(get(urlMatching("/api/v1/users/1"))
+        stubFor(get(urlMatching("/1"))
                 .willReturn(okJson("""
                             {
                                 "id": 1,
@@ -102,7 +90,7 @@ public class OrderServiceIT extends AbstractIT {
         assertEquals(1, orderResponseDTO.getUser().getId());
         assertEquals(1, orderRepository.findAll().size());
 
-        verify(getRequestedFor(urlPathEqualTo("/api/v1/users/email"))
+        wireMockServer.verify(getRequestedFor(urlPathEqualTo("/email"))
                 .withQueryParam("email", equalTo("test@gmail.com")));
     }
 
@@ -114,13 +102,13 @@ public class OrderServiceIT extends AbstractIT {
 
         assertThrows(RuntimeException.class, () -> orderService.createOrder(orderCreateDTO));
 
-        verify(getRequestedFor(urlPathEqualTo("/api/v1/users/email"))
+        wireMockServer.verify(getRequestedFor(urlPathEqualTo("/email"))
                 .withQueryParam("email", equalTo("testfail@gmail.com")));
     }
 
     @Test
     @DisplayName("Update order status")
-    void getOrderById() {
+    void updateOrder() {
         Order order = new Order();
         order.setUserId(1L);
         order.setOrderStatus(OrderStatus.NEW);
@@ -128,12 +116,12 @@ public class OrderServiceIT extends AbstractIT {
         orderRepository.save(order);
 
         OrderUpdateDTO orderUpdateDTO = new OrderUpdateDTO();
-        orderUpdateDTO.setOrderStatus(OrderStatus.DELIVERED);
+        orderUpdateDTO.setOrderStatus(OrderStatus.PAID);
 
         OrderResponseDTO orderResponseDTO = orderService.updateOrder(order.getId(), orderUpdateDTO);
 
-        assertEquals(OrderStatus.DELIVERED, orderResponseDTO.getStatus());
-        assertEquals(OrderStatus.DELIVERED, orderRepository.getOrderById(order.getId()).get().getOrderStatus());
+        assertEquals(OrderStatus.PAID, orderResponseDTO.getStatus());
+        assertEquals(OrderStatus.PAID, orderRepository.getOrderById(order.getId()).get().getOrderStatus());
     }
 
     @Test
@@ -148,6 +136,4 @@ public class OrderServiceIT extends AbstractIT {
         orderService.deleteOrder(order.getId());
         assertFalse(orderRepository.getOrderById(order.getId()).isPresent());
     }
-
-
 }
