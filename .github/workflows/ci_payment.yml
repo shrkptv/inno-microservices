@@ -41,7 +41,7 @@ jobs:
             payment-service/target/*.jar
 
   test:
-    name: Test (Unit + Integration)
+    name: Test
     runs-on: ubuntu-latest
     needs: build
 

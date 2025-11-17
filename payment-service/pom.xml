@@ -33,6 +33,9 @@
         <spring-cloud.version>2025.0.0</spring-cloud.version>
         <wiremock.version>3.13.1</wiremock.version>
         <lombok.mapstruct.version>0.2.0</lombok.mapstruct.version>
+        <sonar-maven-plugin>5.2.0.4988</sonar-maven-plugin>
+        <sonar.organization>shrkptv</sonar.organization>
+        <sonar.projectKey>shrkptv_inno-microservices_payment-service</sonar.projectKey>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -145,6 +148,11 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>${sonar-maven-plugin}</version>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
