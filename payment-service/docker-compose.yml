@@ -1,16 +1,13 @@
 services:
-  db:
-    image: postgres:latest
-    container_name: order-service-db
+  mongo:
+    image: mongo:latest
     environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - ${DB_PORT}:5432
+      - MONGO_INITDB_ROOT_USERNAME=${MONGODB_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_PASSWORD}
     volumes:
-      - order-service-db-data:/var/lib/postgresql/data
-
+      - mongo:/data/db
+    ports:
+      - ${MONGODB_PORT}:27017
   kafka:
     image: apache/kafka-native:latest
     environment:
@@ -29,6 +26,5 @@ services:
       - KAFKA_NUM_PARTITIONS=1
     ports:
       - ${KAFKA_PORT}:9092
-
 volumes:
-  order-service-db-data:
+  mongo:

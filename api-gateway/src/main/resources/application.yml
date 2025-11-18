@@ -25,5 +25,10 @@ spring:
               uri: ${ORDER_SERVICE_URL}
               predicates:
                 - Path=/api/v1/orders/**
+
+            - id: payment-service
+              uri: ${PAYMENT_SERVICE_URL}
+              predicates:
+                - Path=/api/v1/payments/**
 auth-client:
   url: ${AUTH_CLIENT_URL}

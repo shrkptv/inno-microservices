@@ -1,20 +1,7 @@
-version: '3.9'
-
 services:
-  user-service:
-    build: .
-    container_name: user-service
-    ports:
-      - ${SERVER_PORT}:8081
-    environment:
-      SPRING_DATASOURCE_URL: ${DB_URL}
-      SPRING_DATA_REDIS_HOST: ${REDIS_HOST}
-    depends_on:
-      - db
-      - redis
 
   db:
-    image: postgres:15
+    image: postgres:18
     container_name: user-service-db
     environment:
       POSTGRES_DB: ${DB_NAME}
