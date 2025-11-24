@@ -22,7 +22,9 @@ public class Payment {
     @Id
     private String id;
 
+    @Field("order_id")
     private Long orderId;
+    @Field("user_id")
     private Long userId;
     private PaymentStatus status;
     private LocalDateTime timestamp;

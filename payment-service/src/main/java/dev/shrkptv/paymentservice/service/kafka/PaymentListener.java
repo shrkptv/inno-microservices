@@ -13,7 +13,7 @@ public class PaymentListener {
 
     private final PaymentService paymentService;
 
-    @KafkaListener(topics = "order-events", groupId = "${spring.kafka.consumer.group-id}")
+    @KafkaListener(topics = "${spring.kafka.topics.orders.name}", groupId = "${spring.kafka.consumer.group-id}")
     public void listenCreateOrderEvent(OrderCreatedEvent event) {
         PaymentCreateDTO paymentCreateDTO = new PaymentCreateDTO();
         paymentCreateDTO.setOrderId(event.getOrderId());

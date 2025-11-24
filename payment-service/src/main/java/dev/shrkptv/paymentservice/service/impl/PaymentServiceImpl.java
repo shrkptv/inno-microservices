@@ -29,20 +29,33 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     @Transactional
     public PaymentResponseDTO createPayment(PaymentCreateDTO paymentCreateDTO) {
-        Payment payment = paymentMapper.toEntity(paymentCreateDTO);
-        int statusNumber = Integer.parseInt(externalAPIClient.generateRandomNumber().trim());
+        try {
+            Payment payment = paymentMapper.toEntity(paymentCreateDTO);
 
-        if (statusNumber % 2 == 0) {
-            payment.setStatus(PaymentStatus.SUCCESS);
-        } else {
-            payment.setStatus(PaymentStatus.FAILED);
+            int statusNumber = Integer.parseInt(externalAPIClient.generateRandomNumber().trim());
+            PaymentStatus paymentStatus = determinePaymentStatus(statusNumber);
+            payment.setStatus(paymentStatus);
+
+            payment.setTimestamp(LocalDateTime.now());
+
+            Payment createdPayment = paymentRepository.save(payment);
+            paymentProducer.sendPaymentCreatedEvent(createdPayment);
+            return paymentMapper.toDTO(createdPayment);
         }
+        catch (NullPointerException e) {
+            throw new NullPointerException("External API didn't return anything: " + e.getMessage());
+        }
+        catch (Exception e) {
+            throw new RuntimeException("Exception while creating payment: " + e.getMessage());
+        }
+    }
 
-        payment.setTimestamp(LocalDateTime.now());
-
-        Payment createdPayment = paymentRepository.save(payment);
-        paymentProducer.sendPaymentCreatedEvent(createdPayment);
-        return paymentMapper.toDTO(createdPayment);
+    private PaymentStatus determinePaymentStatus(int statusNumber) {
+        if (statusNumber % 2 == 0) {
+            return PaymentStatus.SUCCESS;
+        } else {
+            return PaymentStatus.FAILED;
+        }
     }
 
     @Override

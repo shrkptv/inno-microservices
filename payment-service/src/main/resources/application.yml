@@ -8,6 +8,16 @@ spring:
     bootstrap-servers: ${BOOTSTRAP_SERVERS}
     consumer:
       group-id: ${CONSUMER_GROUP_ID}
+    topics:
+      payments:
+        name: payment-events
+        replicas: 1
+        partitions: 3
+      orders:
+        name: order-events
+        replicas: 1
+        partitions: 3
+
 
 server:
   port: ${SERVER_PORT}

@@ -2,24 +2,32 @@ package dev.shrkptv.orderservice.services.kafka;
 
 import dev.shrkptv.orderservice.database.entity.Order;
 import dev.shrkptv.orderservice.event.OrderCreatedEvent;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 
 @Service
-@RequiredArgsConstructor
 public class OrderProducer {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final String topic;
+
+    public OrderProducer(
+            KafkaTemplate<String, Object> kafkaTemplate,
+            @Value("${spring.kafka.topics.orders.name}") String topic
+    ) {
+        this.kafkaTemplate = kafkaTemplate;
+        this.topic = topic;
+    }
 
     public void sendCreateOrderEvent(Order order) {
         OrderCreatedEvent event = new OrderCreatedEvent();
         event.setOrderId(order.getId());
         event.setUserId(order.getUserId());
         event.setTotalAmount(calculateTotalAmount(order));
-        kafkaTemplate.send("order-events", event);
+        kafkaTemplate.send(topic, event);
     }
 
     private BigDecimal calculateTotalAmount(Order order) {

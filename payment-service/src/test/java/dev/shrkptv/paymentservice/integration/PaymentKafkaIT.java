@@ -6,6 +6,9 @@ import dev.shrkptv.paymentservice.dto.PaymentCreateDTO;
 import dev.shrkptv.paymentservice.dto.PaymentResponseDTO;
 import dev.shrkptv.paymentservice.event.PaymentCreatedEvent;
 import dev.shrkptv.paymentservice.service.PaymentService;
+import org.apache.kafka.clients.admin.NewTopic;
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
@@ -17,6 +20,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.Collections;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
@@ -45,7 +49,8 @@ public class PaymentKafkaIT extends AbstractIT {
     @Autowired
     private ConsumerFactory<String, Object> consumerFactory;
 
-    private static final String TOPIC = "payment-events";
+    @Autowired
+    private NewTopic paymentEventsTopic;
 
     void setupMocksExternalAPI() {
         configureFor("localhost", wireMockServer.port());
@@ -76,24 +81,26 @@ public class PaymentKafkaIT extends AbstractIT {
         paymentCreateDTO.setUserId(1L);
         paymentCreateDTO.setPaymentAmount(BigDecimal.valueOf(100.00));
 
-        var consumer = consumerFactory.createConsumer();
-        consumer.subscribe(Collections.singleton(TOPIC));
-        consumer.poll(Duration.ofSeconds(1));
+        setupMocksExternalAPI();
+
+        PaymentResponseDTO result = paymentService.createPayment(paymentCreateDTO);
+
+        assertNotNull(result);
+        assertEquals(PaymentStatus.SUCCESS, result.getStatus());
+        assertEquals(paymentCreateDTO.getOrderId(), result.getOrderId());
+        assertEquals(paymentCreateDTO.getUserId(), result.getUserId());
+        assertEquals(paymentCreateDTO.getPaymentAmount(), result.getPaymentAmount());
+
+        wireMockServer.verify(getRequestedFor(urlPathTemplate("**")));
+
+        var consumer = createTestConsumer();
+        consumer.subscribe(Collections.singleton(paymentEventsTopic.name()));
 
         try {
-            setupMocksExternalAPI();
-
-            PaymentResponseDTO result = paymentService.createPayment(paymentCreateDTO);
-
-            assertNotNull(result);
-            assertEquals(PaymentStatus.SUCCESS, result.getStatus());
-            assertEquals(paymentCreateDTO.getOrderId(), result.getOrderId());
-            assertEquals(paymentCreateDTO.getUserId(), result.getUserId());
-            assertEquals(paymentCreateDTO.getPaymentAmount(), result.getPaymentAmount());
-
-            wireMockServer.verify(getRequestedFor(urlPathTemplate("**")));
-
-            await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+            await()
+                    .atMost(10, TimeUnit.SECONDS)
+                    .pollInterval(1, TimeUnit.SECONDS)
+                    .untilAsserted(() -> {
                 var records = consumer.poll(Duration.ofSeconds(1));
                 assertFalse(records.isEmpty(), "Kafka event should be sent");
 
@@ -107,5 +114,17 @@ public class PaymentKafkaIT extends AbstractIT {
         } finally {
             consumer.close();
         }
+    }
+
+    private Consumer<String, Object> createTestConsumer() {
+        Properties props = new Properties();
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+
+        return consumerFactory.createConsumer(
+                "test-group",
+                "test-client",
+                null,
+                props
+        );
     }
 }
