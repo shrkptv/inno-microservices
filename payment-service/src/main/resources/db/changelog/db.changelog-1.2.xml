@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:mongodb="http://www.liquibase.org/xml/ns/mongodb"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+         http://www.liquibase.org/xml/ns/mongodb
+         http://www.liquibase.org/xml/ns/mongodb/liquibase-mongodb-latest.xsd">
+
+    <changeSet id="1" author="shrkptv">
+        <mongodb:updateCollection collectionName="payments">
+            <mongodb:query>
+                {
+                    "order_id": { "$type": "int" },
+                    "user_id": { "$type": "int" }
+
+                }
+            </mongodb:query>
+            <mongodb:update>
+                [
+                    {
+                        "$set": {
+                            "order_id": {
+                                "$convert": {
+                                    "input": "$order_id",
+                                    "to": "long"
+                                }
+                            },
+                            "user_id": {
+                                "$convert": {
+                                    "input": "$user_id",
+                                    "to": "long"
+                                }
+                            }
+                        }
+                    }
+                ]
+            </mongodb:update>
+            <mongodb:options>
+                { "multi": true }
+            </mongodb:options>
+        </mongodb:updateCollection>
+    </changeSet>
+</databaseChangeLog>

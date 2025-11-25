@@ -1,17 +1,4 @@
-version: '3.9'
-
 services:
-  auth-service:
-    build: .
-    container_name: auth-service
-    ports:
-      - ${SERVER_PORT}:8000
-    environment:
-      SPRING_DATASOURCE_URL: ${DB_URL}
-      SPRING_JPA_HIBERNATE_DDL_AUTO: none
-    depends_on:
-      - db
-
   db:
     image: postgres:latest
     container_name: auth-service-db

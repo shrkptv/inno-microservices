@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:mongodb="http://www.liquibase.org/xml/ns/mongodb"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+         http://www.liquibase.org/xml/ns/mongodb
+         http://www.liquibase.org/xml/ns/mongodb/liquibase-mongodb-latest.xsd">
+
+    <changeSet id="1" author="shrkptv">
+        <mongodb:createCollection collectionName="payments">
+            <mongodb:options>
+                {
+                    validator: {
+                        $jsonSchema: {
+                            bsonType: "object",
+                            required: ["order_id", "user_id", "status", "timestamp", "payment_amount"],
+                            properties: {
+                                order_id: {
+                                    bsonType: "int",
+                                    description: "Order ID"
+                                },
+                                user_id: {
+                                    bsonType: "int",
+                                    description: "User ID"
+                                },
+                                status: {
+                                    bsonType: "string",
+                                    description: "Payment status"
+                                },
+                                timestamp: {
+                                    bsonType: "date",
+                                    description: "Payment timestamp"
+                                },
+                                payment_amount: {
+                                    bsonType: "double",
+                                    description: "Payment amount"
+                                }
+                            }
+                        }
+                    },
+                    validationAction: "warn",
+                    validationLevel: "strict"
+                }
+            </mongodb:options>
+        </mongodb:createCollection>
+    </changeSet>
+
+    <changeSet id="2" author="shrkptv">
+        <mongodb:createIndex collectionName="payments">
+            <mongodb:keys>
+                { order_id: 1}
+            </mongodb:keys>
+            <mongodb:options>
+                {name: "idx_order_id"}
+            </mongodb:options>
+        </mongodb:createIndex>
+
+        <mongodb:createIndex collectionName="payments">
+            <mongodb:keys>
+                { user_id: 1}
+            </mongodb:keys>
+            <mongodb:options>
+                {name: "idx_user_id"}
+            </mongodb:options>
+        </mongodb:createIndex>
+
+        <mongodb:createIndex collectionName="payments">
+            <mongodb:keys>
+                { status: 1}
+            </mongodb:keys>
+            <mongodb:options>
+                {name: "idx_status"}
+            </mongodb:options>
+        </mongodb:createIndex>
+
+        <mongodb:createIndex collectionName="payments">
+            <mongodb:keys>
+                { timestamp: 1}
+            </mongodb:keys>
+            <mongodb:options>
+                {name: "idx_timestamp"}
+            </mongodb:options>
+        </mongodb:createIndex>
+    </changeSet>
+</databaseChangeLog>

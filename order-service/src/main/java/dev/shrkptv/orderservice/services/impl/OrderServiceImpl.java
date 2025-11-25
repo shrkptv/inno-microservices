@@ -13,6 +13,7 @@ import dev.shrkptv.orderservice.exception.OrderNotFoundByIdException;
 import dev.shrkptv.orderservice.exception.UserNotFoundByEmailException;
 import dev.shrkptv.orderservice.mapper.OrderItemMapper;
 import dev.shrkptv.orderservice.mapper.OrderMapper;
+import dev.shrkptv.orderservice.services.kafka.OrderProducer;
 import dev.shrkptv.orderservice.services.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderMapper orderMapper;
     private final OrderItemMapper orderItemMapper;
     private final UserServiceClient userServiceClient;
+    private final OrderProducer orderProducer;
 
     @Override
     @Transactional
@@ -47,7 +49,10 @@ public class OrderServiceImpl implements OrderService {
         orderItems.forEach(item -> item.setOrder(order));
         order.setOrderItems(orderItems);
 
-        OrderResponseDTO orderResponseDTO = orderMapper.toDto(orderRepository.save(order));
+        Order savedOrder = orderRepository.save(order);
+        orderProducer.sendCreateOrderEvent(savedOrder);
+
+        OrderResponseDTO orderResponseDTO = orderMapper.toDto(savedOrder);
         orderResponseDTO.setUser(userResponseDTO);
 
         return orderResponseDTO;

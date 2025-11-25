@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:mongodb="http://www.liquibase.org/xml/ns/mongodb"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+         http://www.liquibase.org/xml/ns/mongodb
+         http://www.liquibase.org/xml/ns/mongodb/liquibase-mongodb-latest.xsd">
+
+    <changeSet id="1" author="shrkptv">
+        <mongodb:updateCollection collectionName="payments">
+            <mongodb:query>
+                {
+                    "payment_amount": { "$type": "double" }
+                }
+            </mongodb:query>
+            <mongodb:update>
+                [
+                    {
+                        "$set": {
+                            "payment_amount": {
+                                "$convert": {
+                                    "input": "$payment_amount",
+                                    "to": "decimal128"
+                                }
+                            }
+                        }
+                    }
+                ]
+            </mongodb:update>
+            <mongodb:options>
+                { "multi": true }
+            </mongodb:options>
+        </mongodb:updateCollection>
+    </changeSet>
+</databaseChangeLog>

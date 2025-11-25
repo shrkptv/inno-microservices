@@ -15,9 +15,5 @@ spring:
       password: ${REDIS_PASSWORD}
   cache:
     type: redis
-  docker:
-    compose:
-      enabled: true
-      file: .\user-service\docker-compose.yml
 server:
   port: ${SERVER_PORT}
