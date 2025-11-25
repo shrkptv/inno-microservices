@@ -6,7 +6,6 @@ import dev.shrkptv.paymentservice.database.enums.PaymentStatus;
 import dev.shrkptv.paymentservice.database.repository.PaymentRepository;
 import dev.shrkptv.paymentservice.dto.PaymentCreateDTO;
 import dev.shrkptv.paymentservice.dto.PaymentResponseDTO;
-import dev.shrkptv.paymentservice.dto.TotalAmountDTO;
 import dev.shrkptv.paymentservice.mapper.PaymentMapper;
 import dev.shrkptv.paymentservice.service.impl.PaymentServiceImpl;
 import dev.shrkptv.paymentservice.service.kafka.PaymentProducer;
@@ -24,6 +23,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -85,6 +85,19 @@ public class PaymentServiceTest {
         assertEquals(paymentResponseDTO.getStatus(), result.getStatus());
 
         verify(paymentProducer).sendPaymentCreatedEvent(payment);
+    }
+
+    @Test
+    @DisplayName("Create payment when external API returns null")
+    void createPayment_throwNullPointerException_whenExternalAPIReturnsNull() {
+        PaymentCreateDTO paymentCreateDTO = new PaymentCreateDTO();
+        paymentCreateDTO.setOrderId(1L);
+        paymentCreateDTO.setUserId(1L);
+        paymentCreateDTO.setPaymentAmount(BigDecimal.valueOf(100.00));
+
+        when(externalAPIClient.generateRandomNumber()).thenReturn(null);
+
+        assertThrows(NullPointerException.class, () -> paymentService.createPayment(paymentCreateDTO));
     }
 
     private PaymentCreateDTO createDTO(Long orderId, Long userId, BigDecimal amount) {
@@ -202,15 +215,19 @@ public class PaymentServiceTest {
         LocalDateTime startDate = LocalDateTime.now().minusDays(1);
         LocalDateTime endDate = LocalDateTime.now();
 
-        TotalAmountDTO totalAmountDTO = new TotalAmountDTO();
-        totalAmountDTO.setTotalAmount(BigDecimal.valueOf(250.0));
+        Payment firstPayment = createEntity(1L, 1L, BigDecimal.valueOf(100.0));
+        firstPayment.setStatus(PaymentStatus.SUCCESS);
 
-        when(paymentRepository.getTotalAmount(startDate, endDate)).thenReturn(totalAmountDTO);
+        Payment secondPayment = createEntity(2L, 1L, BigDecimal.valueOf(150.0));
+        secondPayment.setStatus(PaymentStatus.SUCCESS);
+
+        when(paymentRepository.getSuccessfulPayments(startDate, endDate)).
+                thenReturn(List.of(firstPayment, secondPayment));
 
         BigDecimal result = paymentService.getTotalAmountForPeriod(startDate, endDate);
 
         assertEquals(BigDecimal.valueOf(250.0), result);
-        verify(paymentRepository).getTotalAmount(startDate, endDate);
+        verify(paymentRepository).getSuccessfulPayments(startDate, endDate);
     }
 
     @Test
@@ -219,12 +236,12 @@ public class PaymentServiceTest {
         LocalDateTime startDate = LocalDateTime.now().minusDays(1);
         LocalDateTime endDate = LocalDateTime.now();
 
-        when(paymentRepository.getTotalAmount(startDate, endDate))
-                .thenReturn(null);
+        when(paymentRepository.getSuccessfulPayments(startDate, endDate))
+                .thenReturn(List.of());
 
         BigDecimal result = paymentService.getTotalAmountForPeriod(startDate, endDate);
 
         assertEquals(BigDecimal.ZERO, result);
-        verify(paymentRepository).getTotalAmount(startDate, endDate);
+        verify(paymentRepository).getSuccessfulPayments(startDate, endDate);
     }
 }
