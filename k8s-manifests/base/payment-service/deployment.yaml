@@ -26,6 +26,7 @@ spec:
               until nc -z kafka 9092; do echo "waiting kafka"; sleep 2; done
       containers:
         - name: payment-service
+          imagePullPolicy: IfNotPresent
           image: inno-microservices-payment-service:latest
           ports:
             - containerPort: 8084

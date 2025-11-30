@@ -21,13 +21,14 @@ spec:
           command:
             - sh
             - -c
-            - >
+            - |
               until nc -z auth-service 8000; do echo "waiting auth"; sleep 2; done &&
               until nc -z user-service 8081; do echo "waiting user"; sleep 2; done &&
-              until nc -z order-service 8082; do echo "waiting order"; sleep 2; done
+              until nc -z order-service 8082; do echo "waiting order"; sleep 2; done &&
               until nc -z payment-service 8084; do echo "waiting payment"; sleep 2; done
       containers:
         - name: api-gateway
+          imagePullPolicy: IfNotPresent
           image: inno-microservices-api-gateway:latest
           ports:
             - containerPort: 8080

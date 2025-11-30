@@ -25,6 +25,7 @@ spec:
               until nc -z auth-db 5432; do echo "waiting for auth-db"; sleep 2; done
       containers:
         - name: auth-service
+          imagePullPolicy: IfNotPresent
           image: inno-microservices-auth-service:latest
           ports:
             - containerPort: 8000
@@ -33,14 +34,14 @@ spec:
             httpGet:
               path: /actuator/health/readiness
               port: 8000
-            initialDelaySeconds: 5
+            initialDelaySeconds: 30
             periodSeconds: 10
 
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness
               port: 8000
-            initialDelaySeconds: 10
+            initialDelaySeconds: 60
             periodSeconds: 20
 
           env:

@@ -32,3 +32,9 @@ spring:
                 - Path=/api/v1/payments/**
 auth-client:
   url: ${AUTH_CLIENT_URL}
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true

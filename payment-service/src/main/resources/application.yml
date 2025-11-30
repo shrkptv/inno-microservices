@@ -24,3 +24,9 @@ server:
 
 external-api:
   url: ${EXTERNAL_API_URL}
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
