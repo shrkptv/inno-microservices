@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-service
+  namespace: inno-microservices
+  labels:
+    app: payment-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payment-service
+  template:
+    metadata:
+      labels:
+        app: payment-service
+    spec:
+      initContainers:
+        - name: wait-for-mongo-and-kafka
+          image: busybox
+          command:
+            - sh
+            - -c
+            - >
+              until nc -z payment-db 27017; do echo "waiting mongo"; sleep 2; done &&
+              until nc -z kafka 9092; do echo "waiting kafka"; sleep 2; done
+      containers:
+        - name: payment-service
+          image: inno-microservices-payment-service:latest
+          ports:
+            - containerPort: 8084
+
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8084
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8084
+            initialDelaySeconds: 10
+            periodSeconds: 20
+
+          env:
+            - name: EXTERNAL_API_URL
+              valueFrom:
+                secretKeyRef:
+                  name: app-environment
+                  key: EXTERNAL_API_URL
+            - name: SERVER_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: app-environment
+                  key: PAYMENT_SERVICE_PORT
+            - name: BOOTSTRAP_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  name: app-environment
+                  key: KAFKA_BOOTSTRAP_SERVERS
+            - name: CONSUMER_GROUP_ID
+              valueFrom:
+                secretKeyRef:
+                  name: app-environment
+                  key: CONSUMER_GROUP_ID
+            - name: MONGODB_URI
+              valueFrom:
+                secretKeyRef:
+                  name: app-environment
+                  key: MONGODB_URI
