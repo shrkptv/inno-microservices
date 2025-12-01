@@ -27,22 +27,23 @@ spec:
               until nc -z redis 6379; do echo "waiting redis"; sleep 2; done
       containers:
         - name: user-service
+          imagePullPolicy: IfNotPresent
           image: inno-microservices-user-service:latest
           ports:
             - containerPort: 8081
 
           readinessProbe:
             httpGet:
-              path: /health/ready
+              path: actuator/health/readiness
               port: 8081
-            initialDelaySeconds: 5
+            initialDelaySeconds: 20
             periodSeconds: 10
 
           livenessProbe:
             httpGet:
-              path: /health
+              path: actuator/health/liveness
               port: 8081
-            initialDelaySeconds: 10
+            initialDelaySeconds: 30
             periodSeconds: 20
 
           env:
@@ -61,11 +62,11 @@ spec:
                 secretKeyRef:
                   name: app-environment
                   key: REDIS_PORT
-            - name: AUTH_SERVICE_URL
+            - name: REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: app-environment
-                  key: AUTH_SERVICE_URL
+                  key: REDIS_PASSWORD
             - name: DB_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -76,3 +77,8 @@ spec:
                 secretKeyRef:
                   name: app-environment
                   key: DB_PASSWORD
+            - name: SERVER_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: app-environment
+                  key: USER_SERVICE_PORT

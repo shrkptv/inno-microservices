@@ -6,7 +6,6 @@ resources:
 
   - kafka/service.yaml
   - kafka/statefulset.yaml
-  - kafka/headless-service.yaml
   - redis/service.yaml
   - redis/statefulset.yaml
   - mongo/payment-db/statefulset.yaml

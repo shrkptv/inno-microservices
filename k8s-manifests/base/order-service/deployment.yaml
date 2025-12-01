@@ -35,14 +35,14 @@ spec:
             httpGet:
               path: /actuator/health/readiness
               port: 8082
-            initialDelaySeconds: 5
+            initialDelaySeconds: 20
             periodSeconds: 10
 
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness
               port: 8082
-            initialDelaySeconds: 10
+            initialDelaySeconds: 30
             periodSeconds: 20
 
           env:
@@ -51,11 +51,6 @@ spec:
                 secretKeyRef:
                   name: app-environment
                   key: ORDER_DB_URL
-            - name: AUTH_SERVICE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: app-environment
-                  key: AUTH_SERVICE_URL
             - name: USER_SERVICE_URL
               valueFrom:
                 secretKeyRef:
@@ -68,6 +63,21 @@ spec:
                   key: ORDER_CONSUMER_GROUP_ID
             - name: BOOTSTRAP_SERVERS
               valueFrom:
-                configMapKeyRef:
+                secretKeyRef:
                   name: app-environment
                   key: KAFKA_BOOTSTRAP_SERVERS
+            - name: SERVER_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: app-environment
+                  key: ORDER_SERVICE_PORT
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: app-environment
+                  key: DB_USERNAME
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-environment
+                  key: DB_PASSWORD

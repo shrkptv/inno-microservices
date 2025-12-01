@@ -21,7 +21,7 @@ spec:
           command:
             - sh
             - -c
-            - >
+            - |
               until nc -z payment-db 27017; do echo "waiting mongo"; sleep 2; done &&
               until nc -z kafka 9092; do echo "waiting kafka"; sleep 2; done
       containers:
@@ -35,14 +35,14 @@ spec:
             httpGet:
               path: /actuator/health/readiness
               port: 8084
-            initialDelaySeconds: 5
+            initialDelaySeconds: 20
             periodSeconds: 10
 
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness
               port: 8084
-            initialDelaySeconds: 10
+            initialDelaySeconds: 30
             periodSeconds: 20
 
           env:
@@ -58,7 +58,7 @@ spec:
                   key: PAYMENT_SERVICE_PORT
             - name: BOOTSTRAP_SERVERS
               valueFrom:
-                configMapKeyRef:
+                secretKeyRef:
                   name: app-environment
                   key: KAFKA_BOOTSTRAP_SERVERS
             - name: CONSUMER_GROUP_ID

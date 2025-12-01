@@ -68,3 +68,13 @@ spec:
                 secretKeyRef:
                   name: app-environment
                   key: PAYMENT_SERVICE_URL
+            - name: SERVER_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: app-environment
+                  key: API_GATEWAY_PORT
+            - name: AUTH_CLIENT_URL
+              valueFrom:
+                secretKeyRef:
+                  name: app-environment
+                  key: AUTH_CLIENT_URL
