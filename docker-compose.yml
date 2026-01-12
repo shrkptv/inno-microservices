@@ -80,9 +80,13 @@ services:
     ports:
       - ${AUTH_SERVICE_PORT}:8000
     environment:
-      SPRING_DATASOURCE_URL: ${AUTH_DB_URL}
+      DB_URL: ${AUTH_DB_URL}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: none
       JWT_SECRET: ${JWT_SECRET}
+      SERVER_PORT: ${AUTH_SERVICE_PORT}
+      USER_SERVICE_URL: ${USER_SERVICE_URL}
     depends_on:
       - auth-db
 

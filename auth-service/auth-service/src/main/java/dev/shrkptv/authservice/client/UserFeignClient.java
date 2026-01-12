@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @FeignClient(name = "user-service", url = "${user-service.url}")
 public interface UserFeignClient {
 
-    @PostMapping
+    @PostMapping("/api/v1/users")
     ResponseEntity<UserResponseDTO> createUser(@Valid @RequestBody UserCreateRequestDTO userCreateDTO);
 
     @DeleteMapping("/{id}")

@@ -32,6 +32,7 @@
         <mapstruct.version>1.6.3</mapstruct.version>
         <spring-cloud.version>2025.0.0</spring-cloud.version>
         <wiremock.version>3.13.1</wiremock.version>
+        <swagger.version>2.8.13</swagger.version>
         <lombok.mapstruct.version>0.2.0</lombok.mapstruct.version>
         <sonar-maven-plugin>5.2.0.4988</sonar-maven-plugin>
         <sonar.organization>shrkptv</sonar.organization>
@@ -56,6 +57,11 @@
         <dependency>
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${swagger.version}</version>
         </dependency>
         <dependency>
             <groupId>org.mapstruct</groupId>

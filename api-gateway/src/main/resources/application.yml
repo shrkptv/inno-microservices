@@ -30,6 +30,46 @@ spring:
               uri: ${PAYMENT_SERVICE_URL}
               predicates:
                 - Path=/api/v1/payments/**
+            - id: auth-service-swagger
+              uri: ${AUTH_SERVICE_URL}
+              predicates:
+                - Path=/v3/api-docs/auth
+              filters:
+                - RewritePath=/v3/api-docs/auth, /v3/api-docs
+              metadata:
+                springdoc:
+                  display-name: "Auth Service API"
+
+            - id: user-service-swagger
+              uri: ${USER_SERVICE_URL}
+              predicates:
+                - Path=/v3/api-docs/users
+              filters:
+                - RewritePath=/v3/api-docs/users, /v3/api-docs
+              metadata:
+                springdoc:
+                  group: "User Service API"
+
+            - id: order-service-swagger
+              uri: ${ORDER_SERVICE_URL}
+              predicates:
+                - Path=/v3/api-docs/orders
+              filters:
+                - RewritePath=/v3/api-docs/orders, /v3/api-docs
+              metadata:
+                springdoc:
+                  group: "Order Service API"
+
+            - id: payment-service-swagger
+              uri: ${PAYMENT_SERVICE_URL}
+              predicates:
+                - Path=/v3/api-docs/payments
+              filters:
+                - RewritePath=/v3/api-docs/payments, /v3/api-docs
+              metadata:
+                springdoc:
+                  group: "Payment Service API"
+
 auth-client:
   url: ${AUTH_CLIENT_URL}
 
@@ -38,3 +78,21 @@ management:
     health:
       probes:
         enabled: true
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  packagesToScan: none
+  swagger-ui:
+    path: /swagger-ui.html
+    server-url: /
+    urls-primary-name: "Auth Service API"
+    urls:
+      - name: Auth Service API
+        url: /v3/api-docs/auth
+      - name: User Service API
+        url: /v3/api-docs/users
+      - name: Order Service API
+        url: /v3/api-docs/orders
+      - name: Payment Service API
+        url: /v3/api-docs/payments
