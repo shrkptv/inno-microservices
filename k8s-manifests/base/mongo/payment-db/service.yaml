@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-db
+  namespace: inno-microservices
+  labels:
+    app: payment-db
+spec:
+  selector:
+    app: payment-db
+  ports:
+    - name: mongo
+      port: 27017
+      targetPort: 27017

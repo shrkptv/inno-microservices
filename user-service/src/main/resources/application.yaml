@@ -8,6 +8,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+
   data:
     redis:
       host: ${REDIS_HOST}
@@ -17,3 +18,9 @@ spring:
     type: redis
 server:
   port: ${SERVER_PORT}
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true

@@ -14,6 +14,4 @@ public class UserResponseDTO {
     private String surname;
     private LocalDate birthDate;
     private String email;
-
-    private List<CardResponseDTO> cardList;
 }

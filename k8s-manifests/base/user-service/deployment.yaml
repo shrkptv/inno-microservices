@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+  namespace: inno-microservices
+  labels:
+    app: user-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-service
+  template:
+    metadata:
+      labels:
+        app: user-service
+    spec:
+      initContainers:
+        - name: wait-for-user-db-and-auth-and-redis
+          image: busybox
+          command:
+            - sh
+            - -c
+            - >
+              until nc -z user-db 5432; do echo "waiting user-db"; sleep 2; done &&
+              until nc -z auth-service 8000; do echo "waiting auth-service"; sleep 2; done &&
+              until nc -z redis 6379; do echo "waiting redis"; sleep 2; done
+      containers:
+        - name: user-service
+          imagePullPolicy: IfNotPresent
+          image: inno-microservices-user-service:latest
+          ports:
+            - containerPort: 8081
+
+          readinessProbe:
+            httpGet:
+              path: actuator/health/readiness
+              port: 8081
+            initialDelaySeconds: 20
+            periodSeconds: 10
+
+          livenessProbe:
+            httpGet:
+              path: actuator/health/liveness
+              port: 8081
+            initialDelaySeconds: 30
+            periodSeconds: 20
+
+          env:
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: app-environment
+                  key: USER_DB_URL
+            - name: SPRING_DATA_REDIS_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: app-environment
+                  key: REDIS_HOST
+            - name: REDIS_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: app-environment
+                  key: REDIS_PORT
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-environment
+                  key: REDIS_PASSWORD
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: app-environment
+                  key: DB_USERNAME
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-environment
+                  key: DB_PASSWORD
+            - name: SERVER_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: app-environment
+                  key: USER_SERVICE_PORT
