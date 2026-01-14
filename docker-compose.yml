@@ -6,6 +6,8 @@ services:
       - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - 9090:9090
+    networks:
+      - inno-microservices-network
 
   loki:
     image: grafana/loki:latest
@@ -16,6 +18,8 @@ services:
     volumes:
       - ./monitoring/loki/loki-config.yaml:/etc/loki/loki-config.yaml:ro
       - loki-data:/loki
+    networks:
+      - inno-microservices-network
 
   alloy:
     image: grafana/alloy:latest
@@ -32,8 +36,22 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /var/log:/var/log:ro
+    networks:
+      - inno-microservices-network
     depends_on:
       - loki
+
+  tempo:
+    image: grafana/tempo:latest
+    container_name: tempo
+    ports:
+      - 3200:3200
+    command: -config.file=/etc/tempo/tempo.yaml
+    volumes:
+      - ./monitoring/tempo/tempo.yaml:/etc/tempo/tempo.yaml
+      - tempo-data:/var/tempo
+    networks:
+      - inno-microservices-network
 
   grafana:
     image: grafana/grafana:latest
@@ -45,6 +63,8 @@ services:
       - loki
     volumes:
       - grafana-storage:/var/lib/grafana
+    networks:
+      - inno-microservices-network
 
   auth-db:
     image: postgres:latest
@@ -57,6 +77,8 @@ services:
       - ${AUTH_DB_PORT}:5432
     volumes:
       - auth-service-database-data:/var/lib/postgresql/data
+    networks:
+      - inno-microservices-network
 
   user-db:
     image: postgres:15
@@ -69,6 +91,8 @@ services:
       - ${USER_DB_PORT}:5432
     volumes:
       - user-service-database-data:/var/lib/postgresql/data
+    networks:
+      - inno-microservices-network
 
   order-db:
     image: postgres:latest
@@ -80,6 +104,8 @@ services:
       - ${ORDER_DB_PORT}:5432
     volumes:
       - order-service-database-data:/var/lib/postgresql/data
+    networks:
+      - inno-microservices-network
 
   payment-db:
       image: mongo:latest
@@ -90,6 +116,8 @@ services:
         - mongo:/data/db
       ports:
         - ${MONGODB_PORT}:27017
+      networks:
+        - inno-microservices-network
 
   kafka:
     image: apache/kafka-native:latest
@@ -109,6 +137,8 @@ services:
       - KAFKA_NUM_PARTITIONS=1
     ports:
       - ${KAFKA_PORT}:9092
+    networks:
+      - inno-microservices-network
 
   redis:
     image: redis:7
@@ -119,6 +149,8 @@ services:
       - redis-data:/data
     environment:
       - REDIS_PASSWORD=${REDIS_PASSWORD}
+    networks:
+      - inno-microservices-network
 
   auth-service:
     build:
@@ -136,6 +168,9 @@ services:
       USER_SERVICE_URL: ${USER_SERVICE_URL}
     depends_on:
       - auth-db
+      - alloy
+    networks:
+      - inno-microservices-network
 
   user-service:
     build:
@@ -155,6 +190,9 @@ services:
       - user-db
       - auth-service
       - redis
+      - alloy
+    networks:
+      - inno-microservices-network
 
   order-service:
     build:
@@ -176,6 +214,9 @@ services:
       - kafka
       - auth-service
       - user-service
+      - alloy
+    networks:
+      - inno-microservices-network
 
   payment-service:
     build:
@@ -196,7 +237,9 @@ services:
       - auth-service
       - user-service
       - order-service
-
+      - alloy
+    networks:
+      - inno-microservices-network
 
   api-gateway:
     build:
@@ -216,6 +259,9 @@ services:
       - user-service
       - order-service
       - payment-service
+      - alloy
+    networks:
+      - inno-microservices-network
 
 volumes:
   auth-service-database-data:
@@ -225,3 +271,8 @@ volumes:
   mongo:
   grafana-storage:
   loki-data:
+  tempo-data:
+
+networks:
+  inno-microservices-network:
+    driver: bridge
