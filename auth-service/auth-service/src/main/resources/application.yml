@@ -29,6 +29,12 @@ management:
     health:
       probes:
         enabled: true
+  tracing:
+    sampling:
+      probability: 1
+  otlp:
+    tracing:
+      endpoint: http://alloy:4318/v1/traces
   health:
     livenessState:
       enabled: true
