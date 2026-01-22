@@ -24,3 +24,13 @@ management:
     health:
       probes:
         enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  tracing:
+    sampling:
+      probability: 1
+  otlp:
+    tracing:
+      endpoint: http://alloy:4318/v1/traces
