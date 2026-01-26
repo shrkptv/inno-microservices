@@ -10,6 +10,7 @@ import dev.shrkptv.authservice.dto.UserCreateRequestDTO;
 import dev.shrkptv.authservice.dto.UserResponseDTO;
 import dev.shrkptv.authservice.exception.FailedRegistrationException;
 import dev.shrkptv.authservice.exception.InvalidTokenException;
+import dev.shrkptv.authservice.exception.UsernameAlreadyExistsException;
 import dev.shrkptv.authservice.security.JwtProvider;
 import dev.shrkptv.authservice.service.AuthService;
 import feign.FeignException;
@@ -46,7 +47,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthUser save(RegisterRequestDTO registerRequestDTO) {
         if(authUserRepository.existsByLogin(registerRequestDTO.getLogin())){
-            throw new UsernameNotFoundException(registerRequestDTO.getLogin());
+            throw new UsernameAlreadyExistsException(registerRequestDTO.getLogin());
         }
 
         UserCreateRequestDTO userCreateRequestDTO = new UserCreateRequestDTO();
