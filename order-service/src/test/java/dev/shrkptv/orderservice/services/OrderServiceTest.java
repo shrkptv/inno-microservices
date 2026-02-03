@@ -49,13 +49,14 @@ class OrderServiceTest {
     @Test
     @DisplayName("Create new order")
     void createOrder_success() {
+        String testEmail = "test@gmail.com";
         OrderCreateDTO orderCreateDTO = new OrderCreateDTO();
-        orderCreateDTO.setUserEmail("test@gmail.com");
+        orderCreateDTO.setUserEmail(testEmail);
         orderCreateDTO.setItems(List.of(new OrderItemCreateDTO()));
 
         UserResponseDTO userResponseDTO = new UserResponseDTO();
         userResponseDTO.setId(1L);
-        userResponseDTO.setEmail("test@gmail.com");
+        userResponseDTO.setEmail(testEmail);
 
         Order order = new Order();
         order.setId(10L);
@@ -66,20 +67,20 @@ class OrderServiceTest {
         orderResponseDTO.setStatus(OrderStatus.NEW);
         orderResponseDTO.setUser(userResponseDTO);
 
-        when(userServiceClient.getUserByEmail("test@gmail.com")).thenReturn(userResponseDTO);
+        when(userServiceClient.getUserByEmail(testEmail)).thenReturn(userResponseDTO);
         when(orderMapper.toEntity(orderCreateDTO)).thenReturn(order);
         when(orderItemMapper.toEntityList(orderCreateDTO.getItems())).thenReturn(List.of(new OrderItem()));
         when(orderRepository.save(order)).thenReturn(order);
         when(orderMapper.toDto(order)).thenReturn(orderResponseDTO);
 
-        OrderResponseDTO result = orderService.createOrder(orderCreateDTO);
+        OrderResponseDTO result = orderService.createOrder(orderCreateDTO, testEmail);
 
         assertNotNull(result);
         assertEquals(orderResponseDTO.getId(), result.getId());
         assertEquals(orderResponseDTO.getStatus(), result.getStatus());
         assertEquals(orderResponseDTO.getUser(), result.getUser());
 
-        verify(userServiceClient).getUserByEmail("test@gmail.com");
+        verify(userServiceClient).getUserByEmail(testEmail);
         verify(orderMapper).toEntity(orderCreateDTO);
         verify(orderItemMapper).toEntityList(orderCreateDTO.getItems());
         verify(orderRepository).save(order);
@@ -90,11 +91,12 @@ class OrderServiceTest {
     @Test
     @DisplayName("Throw exception when user was not found")
     void createOrder_throwsException_whenUserNotFound() {
+        String testEmail = "test@gmail.com";
         OrderCreateDTO orderCreateDTO = new OrderCreateDTO();
-        orderCreateDTO.setUserEmail("test@gmail.com");
+        orderCreateDTO.setUserEmail(testEmail);
 
-        when(userServiceClient.getUserByEmail("test@gmail.com")).thenReturn(null);
-        assertThrows(RuntimeException.class, () -> orderService.createOrder(orderCreateDTO));
+        when(userServiceClient.getUserByEmail(testEmail)).thenReturn(null);
+        assertThrows(RuntimeException.class, () -> orderService.createOrder(orderCreateDTO,  testEmail));
 
         verify(userServiceClient).getUserByEmail("test@gmail.com");
     }

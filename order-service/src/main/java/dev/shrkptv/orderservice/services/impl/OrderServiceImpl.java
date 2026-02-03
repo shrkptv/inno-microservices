@@ -34,11 +34,11 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public OrderResponseDTO createOrder(OrderCreateDTO orderCreateDTO) {
-        UserResponseDTO userResponseDTO = userServiceClient.getUserByEmail(orderCreateDTO.getUserEmail());
+    public OrderResponseDTO createOrder(OrderCreateDTO orderCreateDTO, String email) {
+        UserResponseDTO userResponseDTO = userServiceClient.getUserByEmail(email);
 
         if (userResponseDTO == null || userResponseDTO.getId() == null)
-            throw new UserNotFoundByEmailException(orderCreateDTO.getUserEmail());
+            throw new UserNotFoundByEmailException(email);
 
         Order order = orderMapper.toEntity(orderCreateDTO);
         order.setUserId(userResponseDTO.getId());

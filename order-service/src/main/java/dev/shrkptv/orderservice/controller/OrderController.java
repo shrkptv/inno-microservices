@@ -30,8 +30,11 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    public ResponseEntity<OrderResponseDTO> createOrder(@Valid @RequestBody OrderCreateDTO orderCreateDTO) {
-        OrderResponseDTO orderResponseDTO = orderService.createOrder(orderCreateDTO);
+    public ResponseEntity<OrderResponseDTO> createOrder(
+            @Valid @RequestBody OrderCreateDTO orderCreateDTO,
+            @RequestHeader("X-User-Email") String email
+            ) {
+        OrderResponseDTO orderResponseDTO = orderService.createOrder(orderCreateDTO, email);
         return ResponseEntity.status(HttpStatus.CREATED).body(orderResponseDTO);
     }
 

@@ -8,7 +8,7 @@ import dev.shrkptv.orderservice.dto.OrderUpdateDTO;
 import java.util.List;
 
 public interface OrderService {
-    OrderResponseDTO createOrder(OrderCreateDTO orderCreateDTO);
+    OrderResponseDTO createOrder(OrderCreateDTO orderCreateDTO, String email);
 
     OrderResponseDTO getOrderById(Long id);
 
