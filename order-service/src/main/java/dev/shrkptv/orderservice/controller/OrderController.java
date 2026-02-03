@@ -1,6 +1,7 @@
 package dev.shrkptv.orderservice.controller;
 
 import dev.shrkptv.orderservice.database.enums.OrderStatus;
+import dev.shrkptv.orderservice.dto.ItemResponseDTO;
 import dev.shrkptv.orderservice.dto.OrderCreateDTO;
 import dev.shrkptv.orderservice.dto.OrderResponseDTO;
 import dev.shrkptv.orderservice.dto.OrderUpdateDTO;
@@ -74,5 +75,10 @@ public class OrderController {
     public ResponseEntity<List<OrderResponseDTO>> getMyOrders(
             @RequestHeader("X-User-Email") String email) {
         return ResponseEntity.ok(orderService.getOrderListByEmail(email));
+    }
+
+    @GetMapping("/available-items")
+    public ResponseEntity<List<ItemResponseDTO>> getAvailableItems() {
+        return ResponseEntity.ok(orderService.getAllAvailableItems());
     }
 }

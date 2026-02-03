@@ -34,7 +34,7 @@ public class Order extends BaseEntity<Long> {
     @Column(name = "user_id")
     private Long userId;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems;
 
     public void addOrderItem(OrderItem item) {

@@ -1,6 +1,7 @@
 package dev.shrkptv.orderservice.services;
 
 import dev.shrkptv.orderservice.database.enums.OrderStatus;
+import dev.shrkptv.orderservice.dto.ItemResponseDTO;
 import dev.shrkptv.orderservice.dto.OrderCreateDTO;
 import dev.shrkptv.orderservice.dto.OrderResponseDTO;
 import dev.shrkptv.orderservice.dto.OrderUpdateDTO;
@@ -21,4 +22,6 @@ public interface OrderService {
     void deleteOrder(Long id);
 
     List<OrderResponseDTO> getOrderListByEmail(String email);
+
+    List<ItemResponseDTO> getAllAvailableItems();
  }
