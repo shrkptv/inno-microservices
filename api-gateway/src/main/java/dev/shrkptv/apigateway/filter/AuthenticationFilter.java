@@ -6,6 +6,7 @@ import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFac
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
@@ -38,12 +39,17 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                 }
 
                 try {
-                    authFeignClient.validateToken(authHeader);
+                    String userEmail = authFeignClient.validateToken(authHeader);
+
+                    ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
+                            .header("X-User-Email", userEmail)
+                            .build();
+
+                    return chain.filter(exchange.mutate().request(modifiedRequest).build());
                 } catch (Exception e) {
                     return Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized access to application"));
                 }
             }
-
             return chain.filter(exchange);
         };
     }
