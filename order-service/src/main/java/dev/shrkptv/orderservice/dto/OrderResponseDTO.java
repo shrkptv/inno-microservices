@@ -14,6 +14,6 @@ public class OrderResponseDTO {
     private Long userId;
     private OrderStatus status;
     private LocalDateTime creationDate;
-    private List<OrderItemResponseDTO> items;
+    private List<OrderItemResponseDTO> orderItems;
     private UserResponseDTO user;
 }
