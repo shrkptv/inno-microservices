@@ -233,4 +233,36 @@ class OrderServiceTest {
         assertThrows(OrderNotFoundByIdException.class, () -> orderService.deleteOrder(2L));
         verify(orderRepository).existsById(2L);
     }
+
+    @Test
+    @DisplayName("Return list of orders for specific user email")
+    void getOrderListByEmail_success() {
+        String email = "test@gmail.com";
+        Long userId = 1L;
+
+        UserResponseDTO userResponseDTO = new UserResponseDTO();
+        userResponseDTO.setId(userId);
+        userResponseDTO.setEmail(email);
+
+        Order order = new Order();
+        order.setId(100L);
+        order.setUserId(userId);
+
+        OrderResponseDTO orderResponseDTO = new OrderResponseDTO();
+        orderResponseDTO.setId(100L);
+
+        when(userServiceClient.getUserByEmail(email)).thenReturn(userResponseDTO);
+        when(orderRepository.findAllByUserId(userId)).thenReturn(List.of(order));
+        when(orderMapper.toDto(order)).thenReturn(orderResponseDTO);
+
+        List<OrderResponseDTO> result = orderService.getOrderListByEmail(email);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(userResponseDTO, result.get(0).getUser());
+
+        verify(userServiceClient).getUserByEmail(email);
+        verify(orderRepository).findAllByUserId(userId);
+        verify(orderMapper).toDto(order);
+    }
 }
