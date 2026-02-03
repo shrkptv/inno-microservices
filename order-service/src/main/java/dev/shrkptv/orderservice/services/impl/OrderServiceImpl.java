@@ -109,4 +109,23 @@ public class OrderServiceImpl implements OrderService {
 
         orderRepository.deleteById(id);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<OrderResponseDTO> getOrderListByEmail(String email) {
+        UserResponseDTO user = userServiceClient.getUserByEmail(email);
+
+        if (user == null || user.getId() == null) {
+            throw new UserNotFoundByEmailException(email);
+        }
+
+        return orderRepository.findAllByUserId(user.getId())
+                .stream()
+                .map(order -> {
+                    OrderResponseDTO dto = orderMapper.toDto(order);
+                    dto.setUser(user);
+                    return dto;
+                })
+                .toList();
+    }
 }

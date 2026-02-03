@@ -19,4 +19,6 @@ public interface OrderService {
     OrderResponseDTO updateOrder(Long id, OrderUpdateDTO userUpdateDTO);
 
     void deleteOrder(Long id);
-}
+
+    List<OrderResponseDTO> getOrderListByEmail(String email);
+ }
