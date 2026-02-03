@@ -43,12 +43,10 @@ public class AuthController {
 
     @PostMapping("/validate")
     public ResponseEntity<String> validateToken(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
-        if(authService.validateToken(token))
-        {
-            return ResponseEntity.ok("Token is valid!");
-        }
-        else
-        {
+        try {
+            String email = authService.validateToken(token);
+            return ResponseEntity.ok(email);
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token is invalid or expired.");
         }
     }

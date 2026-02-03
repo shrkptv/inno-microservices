@@ -127,9 +127,10 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public boolean validateToken(String token) {
-        if (jwtProvider.validateAccessToken(token) || jwtProvider.validateRefreshToken(token)) {;
-            return true;
+    public String validateToken(String authHeader) {
+        String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
+        if (jwtProvider.validateAccessToken(token)) {;
+            return jwtProvider.getLoginFromToken(token);
         } else {
             throw new InvalidTokenException();
         }
