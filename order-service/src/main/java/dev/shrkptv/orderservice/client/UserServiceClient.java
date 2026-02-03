@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient(name = "user-service", url = "${user-service.url}")
 public interface UserServiceClient {
 
-    @GetMapping("/email")
+    @GetMapping("/api/v1/users/email")
     UserResponseDTO getUserByEmail(@RequestParam String email);
 
-    @GetMapping("/{id}")
+    @GetMapping("/api/v1/users/{id}")
     UserResponseDTO getUserById(@PathVariable("id") Long id);
 }
