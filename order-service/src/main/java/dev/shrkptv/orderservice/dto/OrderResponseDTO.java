@@ -13,7 +13,7 @@ public class OrderResponseDTO {
     private Long id;
     private Long userId;
     private OrderStatus status;
-    private LocalDateTime orderDate;
-    private List<OrderItemResponseDTO> items;
+    private LocalDateTime creationDate;
+    private List<OrderItemResponseDTO> orderItems;
     private UserResponseDTO user;
 }

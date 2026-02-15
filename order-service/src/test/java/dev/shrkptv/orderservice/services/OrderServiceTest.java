@@ -1,9 +1,11 @@
 package dev.shrkptv.orderservice.services;
 
 import dev.shrkptv.orderservice.client.UserServiceClient;
+import dev.shrkptv.orderservice.database.entity.Item;
 import dev.shrkptv.orderservice.database.entity.Order;
 import dev.shrkptv.orderservice.database.entity.OrderItem;
 import dev.shrkptv.orderservice.database.enums.OrderStatus;
+import dev.shrkptv.orderservice.database.repository.ItemRepository;
 import dev.shrkptv.orderservice.database.repository.OrderRepository;
 import dev.shrkptv.orderservice.dto.OrderCreateDTO;
 import dev.shrkptv.orderservice.dto.OrderItemCreateDTO;
@@ -22,10 +24,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -43,58 +48,69 @@ class OrderServiceTest {
     private  UserServiceClient userServiceClient;
     @Mock
     private OrderProducer orderProducer;
+    @Mock
+    private ItemRepository itemRepository;
     @InjectMocks
     private OrderServiceImpl orderService;
 
     @Test
     @DisplayName("Create new order")
     void createOrder_success() {
+        String testEmail = "test@gmail.com";
+        Long itemId = 1L;
+
+        Item mockItem = new Item();
+        mockItem.setId(itemId);
+        mockItem.setPrice(new BigDecimal("100.00"));
+        mockItem.setName("Test Product");
+
+        // Подготовка DTO
+        OrderItemCreateDTO itemDto = new OrderItemCreateDTO();
+        itemDto.setItemId(itemId);
+        itemDto.setQuantity(2);
+
         OrderCreateDTO orderCreateDTO = new OrderCreateDTO();
-        orderCreateDTO.setUserEmail("test@gmail.com");
-        orderCreateDTO.setItems(List.of(new OrderItemCreateDTO()));
+        orderCreateDTO.setItems(List.of(itemDto));
 
         UserResponseDTO userResponseDTO = new UserResponseDTO();
         userResponseDTO.setId(1L);
-        userResponseDTO.setEmail("test@gmail.com");
+        userResponseDTO.setEmail(testEmail);
 
         Order order = new Order();
-        order.setId(10L);
-        order.setUserId(1L);
+        order.setOrderItems(new ArrayList<>());
 
-        OrderResponseDTO orderResponseDTO = new OrderResponseDTO();
-        orderResponseDTO.setId(10L);
-        orderResponseDTO.setStatus(OrderStatus.NEW);
-        orderResponseDTO.setUser(userResponseDTO);
+        OrderResponseDTO expectedResponse = new OrderResponseDTO();
+        expectedResponse.setId(10L);
+        expectedResponse.setStatus(OrderStatus.NEW);
 
-        when(userServiceClient.getUserByEmail("test@gmail.com")).thenReturn(userResponseDTO);
+        // MOCKING
+        when(userServiceClient.getUserByEmail(testEmail)).thenReturn(userResponseDTO);
         when(orderMapper.toEntity(orderCreateDTO)).thenReturn(order);
-        when(orderItemMapper.toEntityList(orderCreateDTO.getItems())).thenReturn(List.of(new OrderItem()));
-        when(orderRepository.save(order)).thenReturn(order);
-        when(orderMapper.toDto(order)).thenReturn(orderResponseDTO);
+        when(itemRepository.findById(itemId)).thenReturn(Optional.of(mockItem));
+        when(orderRepository.save(any(Order.class))).thenReturn(order);
+        when(orderMapper.toDto(any(Order.class))).thenReturn(expectedResponse);
 
-        OrderResponseDTO result = orderService.createOrder(orderCreateDTO);
+        OrderResponseDTO result = orderService.createOrder(orderCreateDTO, testEmail);
 
         assertNotNull(result);
-        assertEquals(orderResponseDTO.getId(), result.getId());
-        assertEquals(orderResponseDTO.getStatus(), result.getStatus());
-        assertEquals(orderResponseDTO.getUser(), result.getUser());
+        assertEquals(expectedResponse.getId(), result.getId());
+        assertEquals(userResponseDTO, result.getUser());
 
-        verify(userServiceClient).getUserByEmail("test@gmail.com");
-        verify(orderMapper).toEntity(orderCreateDTO);
-        verify(orderItemMapper).toEntityList(orderCreateDTO.getItems());
-        verify(orderRepository).save(order);
-        verify(orderMapper).toDto(order);
-        verify(orderProducer).sendCreateOrderEvent(order);
+        verify(userServiceClient).getUserByEmail(testEmail);
+        verify(itemRepository).findById(itemId);
+        verify(orderRepository).save(any(Order.class));
+        verify(orderProducer).sendCreateOrderEvent(any(Order.class));
     }
 
     @Test
     @DisplayName("Throw exception when user was not found")
     void createOrder_throwsException_whenUserNotFound() {
+        String testEmail = "test@gmail.com";
         OrderCreateDTO orderCreateDTO = new OrderCreateDTO();
-        orderCreateDTO.setUserEmail("test@gmail.com");
+        orderCreateDTO.setUserEmail(testEmail);
 
-        when(userServiceClient.getUserByEmail("test@gmail.com")).thenReturn(null);
-        assertThrows(RuntimeException.class, () -> orderService.createOrder(orderCreateDTO));
+        when(userServiceClient.getUserByEmail(testEmail)).thenReturn(null);
+        assertThrows(RuntimeException.class, () -> orderService.createOrder(orderCreateDTO,  testEmail));
 
         verify(userServiceClient).getUserByEmail("test@gmail.com");
     }
@@ -232,5 +248,37 @@ class OrderServiceTest {
         when(orderRepository.existsById(2L)).thenReturn(false);
         assertThrows(OrderNotFoundByIdException.class, () -> orderService.deleteOrder(2L));
         verify(orderRepository).existsById(2L);
+    }
+
+    @Test
+    @DisplayName("Return list of orders for specific user email")
+    void getOrderListByEmail_success() {
+        String email = "test@gmail.com";
+        Long userId = 1L;
+
+        UserResponseDTO userResponseDTO = new UserResponseDTO();
+        userResponseDTO.setId(userId);
+        userResponseDTO.setEmail(email);
+
+        Order order = new Order();
+        order.setId(100L);
+        order.setUserId(userId);
+
+        OrderResponseDTO orderResponseDTO = new OrderResponseDTO();
+        orderResponseDTO.setId(100L);
+
+        when(userServiceClient.getUserByEmail(email)).thenReturn(userResponseDTO);
+        when(orderRepository.findAllByUserId(userId)).thenReturn(List.of(order));
+        when(orderMapper.toDto(order)).thenReturn(orderResponseDTO);
+
+        List<OrderResponseDTO> result = orderService.getOrderListByEmail(email);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(userResponseDTO, result.get(0).getUser());
+
+        verify(userServiceClient).getUserByEmail(email);
+        verify(orderRepository).findAllByUserId(userId);
+        verify(orderMapper).toDto(order);
     }
 }

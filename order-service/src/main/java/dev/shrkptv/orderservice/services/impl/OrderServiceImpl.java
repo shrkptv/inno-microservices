@@ -1,16 +1,20 @@
 package dev.shrkptv.orderservice.services.impl;
 
 import dev.shrkptv.orderservice.client.UserServiceClient;
+import dev.shrkptv.orderservice.database.entity.Item;
 import dev.shrkptv.orderservice.database.entity.Order;
 import dev.shrkptv.orderservice.database.entity.OrderItem;
 import dev.shrkptv.orderservice.database.enums.OrderStatus;
+import dev.shrkptv.orderservice.database.repository.ItemRepository;
 import dev.shrkptv.orderservice.database.repository.OrderRepository;
+import dev.shrkptv.orderservice.dto.ItemResponseDTO;
 import dev.shrkptv.orderservice.dto.OrderCreateDTO;
 import dev.shrkptv.orderservice.dto.OrderResponseDTO;
 import dev.shrkptv.orderservice.dto.OrderUpdateDTO;
 import dev.shrkptv.orderservice.dto.UserResponseDTO;
 import dev.shrkptv.orderservice.exception.OrderNotFoundByIdException;
 import dev.shrkptv.orderservice.exception.UserNotFoundByEmailException;
+import dev.shrkptv.orderservice.mapper.ItemMapper;
 import dev.shrkptv.orderservice.mapper.OrderItemMapper;
 import dev.shrkptv.orderservice.mapper.OrderMapper;
 import dev.shrkptv.orderservice.services.kafka.OrderProducer;
@@ -21,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,31 +36,44 @@ public class OrderServiceImpl implements OrderService {
     private final OrderItemMapper orderItemMapper;
     private final UserServiceClient userServiceClient;
     private final OrderProducer orderProducer;
+    private final ItemMapper itemMapper;
+    private final ItemRepository itemRepository;
 
     @Override
     @Transactional
-    public OrderResponseDTO createOrder(OrderCreateDTO orderCreateDTO) {
-        UserResponseDTO userResponseDTO = userServiceClient.getUserByEmail(orderCreateDTO.getUserEmail());
-
-        if (userResponseDTO == null || userResponseDTO.getId() == null)
-            throw new UserNotFoundByEmailException(orderCreateDTO.getUserEmail());
+    public OrderResponseDTO createOrder(OrderCreateDTO orderCreateDTO, String email) {
+        UserResponseDTO userResponseDTO = userServiceClient.getUserByEmail(email);
+        if (userResponseDTO == null || userResponseDTO.getId() == null) {
+            throw new UserNotFoundByEmailException(email);
+        }
 
         Order order = orderMapper.toEntity(orderCreateDTO);
         order.setUserId(userResponseDTO.getId());
         order.setOrderStatus(OrderStatus.NEW);
         order.setCreationDate(LocalDate.now());
 
-        List<OrderItem> orderItems = orderItemMapper.toEntityList(orderCreateDTO.getItems());
-        orderItems.forEach(item -> item.setOrder(order));
+        List<OrderItem> orderItems = orderCreateDTO.getItems().stream()
+                .map(itemDto -> {
+                    Item item = itemRepository.findById(itemDto.getItemId())
+                            .orElseThrow(() -> new RuntimeException(itemDto.getItemId().toString()));
+
+                    OrderItem orderItem = new OrderItem();
+                    orderItem.setItem(item);
+                    orderItem.setQuantity(itemDto.getQuantity());
+                    orderItem.setOrder(order);
+                    return orderItem;
+                })
+                .collect(Collectors.toList());
+
         order.setOrderItems(orderItems);
 
         Order savedOrder = orderRepository.save(order);
+
         orderProducer.sendCreateOrderEvent(savedOrder);
 
-        OrderResponseDTO orderResponseDTO = orderMapper.toDto(savedOrder);
-        orderResponseDTO.setUser(userResponseDTO);
-
-        return orderResponseDTO;
+        OrderResponseDTO response = orderMapper.toDto(savedOrder);
+        response.setUser(userResponseDTO);
+        return response;
     }
 
     @Override
@@ -108,5 +126,30 @@ public class OrderServiceImpl implements OrderService {
         }
 
         orderRepository.deleteById(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<OrderResponseDTO> getOrderListByEmail(String email) {
+        UserResponseDTO user = userServiceClient.getUserByEmail(email);
+
+        if (user == null || user.getId() == null) {
+            throw new UserNotFoundByEmailException(email);
+        }
+
+        return orderRepository.findAllByUserId(user.getId())
+                .stream()
+                .map(order -> {
+                    OrderResponseDTO dto = orderMapper.toDto(order);
+                    dto.setUser(user);
+                    return dto;
+                })
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ItemResponseDTO> getAllAvailableItems() {
+        return itemMapper.toDtoList(itemRepository.findAll());
     }
 }

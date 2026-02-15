@@ -11,5 +11,5 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface AuthFeignClient {
 
     @PostMapping("/validate")
-    void validateToken(@RequestHeader(HttpHeaders.AUTHORIZATION) String token);
+    String validateToken(@RequestHeader(HttpHeaders.AUTHORIZATION) String token);
 }

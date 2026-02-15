@@ -1,6 +1,7 @@
 package dev.shrkptv.orderservice.services;
 
 import dev.shrkptv.orderservice.database.enums.OrderStatus;
+import dev.shrkptv.orderservice.dto.ItemResponseDTO;
 import dev.shrkptv.orderservice.dto.OrderCreateDTO;
 import dev.shrkptv.orderservice.dto.OrderResponseDTO;
 import dev.shrkptv.orderservice.dto.OrderUpdateDTO;
@@ -8,7 +9,7 @@ import dev.shrkptv.orderservice.dto.OrderUpdateDTO;
 import java.util.List;
 
 public interface OrderService {
-    OrderResponseDTO createOrder(OrderCreateDTO orderCreateDTO);
+    OrderResponseDTO createOrder(OrderCreateDTO orderCreateDTO, String email);
 
     OrderResponseDTO getOrderById(Long id);
 
@@ -19,4 +20,8 @@ public interface OrderService {
     OrderResponseDTO updateOrder(Long id, OrderUpdateDTO userUpdateDTO);
 
     void deleteOrder(Long id);
-}
+
+    List<OrderResponseDTO> getOrderListByEmail(String email);
+
+    List<ItemResponseDTO> getAllAvailableItems();
+ }

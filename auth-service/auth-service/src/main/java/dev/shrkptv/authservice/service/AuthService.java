@@ -13,5 +13,5 @@ public interface AuthService extends UserDetailsService {
 
     LoginResponseDTO refreshAuthToken(String refreshToken);
 
-    boolean validateToken(String token);
+    String validateToken(String token);
 }

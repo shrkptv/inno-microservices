@@ -1,6 +1,7 @@
 package dev.shrkptv.orderservice.controller;
 
 import dev.shrkptv.orderservice.database.enums.OrderStatus;
+import dev.shrkptv.orderservice.dto.ItemResponseDTO;
 import dev.shrkptv.orderservice.dto.OrderCreateDTO;
 import dev.shrkptv.orderservice.dto.OrderResponseDTO;
 import dev.shrkptv.orderservice.dto.OrderUpdateDTO;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,8 +31,11 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    public ResponseEntity<OrderResponseDTO> createOrder(@Valid @RequestBody OrderCreateDTO orderCreateDTO) {
-        OrderResponseDTO orderResponseDTO = orderService.createOrder(orderCreateDTO);
+    public ResponseEntity<OrderResponseDTO> createOrder(
+            @Valid @RequestBody OrderCreateDTO orderCreateDTO,
+            @RequestHeader("X-User-Email") String email
+            ) {
+        OrderResponseDTO orderResponseDTO = orderService.createOrder(orderCreateDTO, email);
         return ResponseEntity.status(HttpStatus.CREATED).body(orderResponseDTO);
     }
 
@@ -64,5 +69,16 @@ public class OrderController {
     public ResponseEntity<Void> deleteOrder(@PathVariable Long id) {
         orderService.deleteOrder(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/my")
+    public ResponseEntity<List<OrderResponseDTO>> getMyOrders(
+            @RequestHeader("X-User-Email") String email) {
+        return ResponseEntity.ok(orderService.getOrderListByEmail(email));
+    }
+
+    @GetMapping("/available-items")
+    public ResponseEntity<List<ItemResponseDTO>> getAvailableItems() {
+        return ResponseEntity.ok(orderService.getAllAvailableItems());
     }
 }

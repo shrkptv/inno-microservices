@@ -50,7 +50,7 @@ public class OrderServiceIT extends AbstractIT {
 
         configureFor("localhost", wireMockServer.port());
 
-        stubFor(get(urlPathEqualTo("/email"))
+        stubFor(get(urlPathEqualTo("/api/v1/users/email"))
                 .withQueryParam("email", equalTo("test@gmail.com"))
                 .willReturn(okJson("""
                             {
@@ -59,11 +59,11 @@ public class OrderServiceIT extends AbstractIT {
                             }
                         """)));
 
-        stubFor(get(urlPathEqualTo("/email"))
+        stubFor(get(urlPathEqualTo("/api/v1/users/email"))
                 .withQueryParam("email", equalTo("testfail@gmail.com"))
                 .willReturn(aResponse().withStatus(HttpStatus.NOT_FOUND.value())));
 
-        stubFor(get(urlMatching("/1"))
+        stubFor(get(urlMatching("/api/v1/users/1"))
                 .willReturn(okJson("""
                             {
                                 "id": 1,
@@ -81,28 +81,30 @@ public class OrderServiceIT extends AbstractIT {
     @Test
     @DisplayName("Create new order")
     void createOrder() {
+        String testEmail = "test@gmail.com";
         OrderCreateDTO orderCreateDTO = new OrderCreateDTO();
-        orderCreateDTO.setUserEmail("test@gmail.com");
+        orderCreateDTO.setUserEmail(testEmail);
         orderCreateDTO.setItems(List.of());
 
-        OrderResponseDTO orderResponseDTO = orderService.createOrder(orderCreateDTO);
+        OrderResponseDTO orderResponseDTO = orderService.createOrder(orderCreateDTO, testEmail);
 
         assertEquals(1, orderResponseDTO.getUser().getId());
         assertEquals(1, orderRepository.findAll().size());
 
-        wireMockServer.verify(getRequestedFor(urlPathEqualTo("/email"))
+        wireMockServer.verify(getRequestedFor(urlPathEqualTo("/api/v1/users/email"))
                 .withQueryParam("email", equalTo("test@gmail.com")));
     }
 
     @Test
     @DisplayName("Throw exception when user not found by email")
     void createOrder_userNotFound() {
+        String failEmail = "testfail@gmail.com";
         OrderCreateDTO orderCreateDTO = new OrderCreateDTO();
-        orderCreateDTO.setUserEmail("testfail@gmail.com");
+        orderCreateDTO.setUserEmail(failEmail);
 
-        assertThrows(RuntimeException.class, () -> orderService.createOrder(orderCreateDTO));
+        assertThrows(RuntimeException.class, () -> orderService.createOrder(orderCreateDTO, failEmail));
 
-        wireMockServer.verify(getRequestedFor(urlPathEqualTo("/email"))
+        wireMockServer.verify(getRequestedFor(urlPathEqualTo("/api/v1/users/email"))
                 .withQueryParam("email", equalTo("testfail@gmail.com")));
     }
 
