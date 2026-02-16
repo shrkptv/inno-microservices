@@ -28,6 +28,7 @@
     </scm>
     <properties>
         <java.version>21</java.version>
+        <testcontainers.version>1.21.4</testcontainers.version>
         <liquibase-mongodb.version>5.0.1</liquibase-mongodb.version>
         <mapstruct.version>1.6.3</mapstruct.version>
         <spring-cloud.version>2025.0.0</spring-cloud.version>
