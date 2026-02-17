@@ -76,12 +76,12 @@ services:
     ports:
       - ${AUTH_DB_PORT}:5432
     volumes:
-      - auth-service-database-data:/var/lib/postgresql/data
+      - auth-service-database-data:/var/lib/postgresql
     networks:
       - inno-microservices-network
 
   user-db:
-    image: postgres:15
+    image: postgres:latest
     container_name: user-service-database
     environment:
       POSTGRES_DB: ${USER_DB_NAME}
@@ -90,7 +90,7 @@ services:
     ports:
       - ${USER_DB_PORT}:5432
     volumes:
-      - user-service-database-data:/var/lib/postgresql/data
+      - user-service-database-data:/var/lib/postgresql
     networks:
       - inno-microservices-network
 
@@ -103,7 +103,7 @@ services:
     ports:
       - ${ORDER_DB_PORT}:5432
     volumes:
-      - order-service-database-data:/var/lib/postgresql/data
+      - order-service-database-data:/var/lib/postgresql
     networks:
       - inno-microservices-network
 
@@ -264,6 +264,38 @@ services:
     networks:
       - inno-microservices-network
 
+  keycloak-db:
+    image: postgres:latest
+    container_name: keycloak-database
+    environment:
+      POSTGRES_DB: ${KC_DB_NAME}
+      POSTGRES_USER: ${KC_DB_USERNAME}
+      POSTGRES_PASSWORD: ${KC_DB_PASSWORD}
+    ports:
+      - ${KC_DB_PORT}:5432
+    networks:
+      - inno-microservices-network
+    volumes:
+      - keycloak-db-data:/var/lib/postgresql
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.1
+    container_name: keycloak-server
+    command: start-dev
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/${KC_DB_NAME}
+      KC_DB_USERNAME: ${KC_DB_USERNAME}
+      KC_DB_PASSWORD: ${KC_DB_PASSWORD}
+      KEYCLOAK_ADMIN: ${KC_ADMIN_USER}
+      KEYCLOAK_ADMIN_PASSWORD: ${KC_ADMIN_PASSWORD}
+    ports:
+      - ${KC_PORT}:8080
+    depends_on:
+      - keycloak-db
+    networks:
+      - inno-microservices-network
+
 volumes:
   auth-service-database-data:
   user-service-database-data:
@@ -273,6 +305,7 @@ volumes:
   grafana-storage:
   loki-data:
   tempo-data:
+  keycloak-db-data:
 
 networks:
   inno-microservices-network:
