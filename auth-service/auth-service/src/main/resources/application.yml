@@ -42,7 +42,7 @@ management:
       enabled: true
 
 kc:
-  server-url: http://keycloak:8085
+  server-url: http://keycloak:8080
   realm: inno-realm
   client-id: auth-service
   client-secret: ${KC_CLIENT_SECRET}
