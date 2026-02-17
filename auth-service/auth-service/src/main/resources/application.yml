@@ -40,3 +40,9 @@ management:
       enabled: true
     readinessState:
       enabled: true
+
+kc:
+  server-url: http://keycloak:8085
+  realm: inno-realm
+  client-id: auth-service
+  client-secret: ${KC_CLIENT_SECRET}
