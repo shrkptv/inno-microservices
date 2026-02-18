@@ -9,6 +9,11 @@ spring:
     hibernate:
       ddl-auto: none
       show_sql: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${JWK_SET_URI}
 
 server:
   port: ${SERVER_PORT}

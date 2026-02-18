@@ -167,6 +167,7 @@ services:
       SERVER_PORT: ${AUTH_SERVICE_PORT}
       USER_SERVICE_URL: ${USER_SERVICE_URL}
       KC_CLIENT_SECRET: ${KC_CLIENT_SECRET}
+      JWK_SET_URI: ${JWK_SET_URI}
     depends_on:
       - auth-db
       - alloy

@@ -7,13 +7,10 @@ import dev.shrkptv.authservice.dto.LoginRequestDTO;
 import dev.shrkptv.authservice.dto.LoginResponseDTO;
 import dev.shrkptv.authservice.dto.RegisterRequestDTO;
 import dev.shrkptv.authservice.dto.UserCreateRequestDTO;
-import dev.shrkptv.authservice.dto.UserResponseDTO;
 import dev.shrkptv.authservice.exception.FailedRegistrationException;
 import dev.shrkptv.authservice.exception.InvalidTokenException;
-import dev.shrkptv.authservice.exception.UsernameAlreadyExistsException;
 import dev.shrkptv.authservice.security.JwtProvider;
 import dev.shrkptv.authservice.service.AuthService;
-import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.admin.client.Keycloak;
@@ -24,14 +21,10 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -50,6 +43,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserFeignClient userFeignClient;
     private final Keycloak keycloak;
     private final RestTemplate restTemplate = new RestTemplate();
+    private final JwtDecoder jwtDecoder;
 
     @Value("${kc.server-url}")
     private String serverUrl;
@@ -162,12 +156,18 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
-    @Override
     public String validateToken(String authHeader) {
-        String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
-        if (jwtProvider.validateAccessToken(token)) {;
-            return jwtProvider.getLoginFromToken(token);
-        } else {
+        String tokenValue = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
+        try {
+            Jwt jwt = jwtDecoder.decode(tokenValue);
+
+            String username = jwt.getClaimAsString("preferred_username");
+            if (username == null) {
+                username = jwt.getSubject();
+            }
+            return username;
+        } catch (Exception e) {
+            log.error("Token validation failed: {}", e.getMessage());
             throw new InvalidTokenException();
         }
     }
