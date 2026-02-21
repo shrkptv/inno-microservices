@@ -51,6 +51,8 @@ public class AuthServiceImpl implements AuthService {
     private String clientId;
     @Value("${kc.client-secret}")
     private String clientSecret;
+    @Value("${GOOGLE_REDIRECT_URI}")
+    private String googleRedirectUri;
 
     @Override
     public UserDetails loadUserByUsername(String login) throws UsernameNotFoundException{
@@ -163,5 +165,15 @@ public class AuthServiceImpl implements AuthService {
             log.error("Token validation failed: {}", e.getMessage());
             throw new InvalidTokenException();
         }
+    }
+
+    @Override
+    public LoginResponseDTO exchangeCodeForToken(String code) {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("grant_type", "authorization_code");
+        params.add("code", code);
+        params.add("redirect_uri", googleRedirectUri);
+
+        return fetchToken(params);
     }
 }

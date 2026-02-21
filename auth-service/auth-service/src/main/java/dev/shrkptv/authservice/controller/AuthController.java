@@ -50,4 +50,9 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token is invalid or expired.");
         }
     }
+
+    @PostMapping("/google-callback")
+    public ResponseEntity<LoginResponseDTO> exchangeCode(@RequestParam("code") String code) {
+        return ResponseEntity.ok(authService.exchangeCodeForToken(code));
+    }
 }

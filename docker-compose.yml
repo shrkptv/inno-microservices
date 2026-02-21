@@ -168,6 +168,7 @@ services:
       USER_SERVICE_URL: ${USER_SERVICE_URL}
       KC_CLIENT_SECRET: ${KC_CLIENT_SECRET}
       JWK_SET_URI: ${JWK_SET_URI}
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI}
     depends_on:
       - auth-db
       - alloy
