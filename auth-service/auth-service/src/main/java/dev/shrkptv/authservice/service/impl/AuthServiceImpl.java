@@ -9,7 +9,6 @@ import dev.shrkptv.authservice.dto.RegisterRequestDTO;
 import dev.shrkptv.authservice.dto.UserCreateRequestDTO;
 import dev.shrkptv.authservice.exception.FailedRegistrationException;
 import dev.shrkptv.authservice.exception.InvalidTokenException;
-import dev.shrkptv.authservice.security.JwtProvider;
 import dev.shrkptv.authservice.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,10 +38,9 @@ import java.util.Map;
 public class AuthServiceImpl implements AuthService {
 
     private final AuthUserRepository authUserRepository;
-    private final JwtProvider jwtProvider;
     private final UserFeignClient userFeignClient;
     private final Keycloak keycloak;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
     private final JwtDecoder jwtDecoder;
 
     @Value("${kc.server-url}")
@@ -63,18 +61,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthUser save(RegisterRequestDTO registerRequestDTO) {
-        UserRepresentation user = new UserRepresentation();
-        user.setEnabled(true);
-        user.setUsername(registerRequestDTO.getLogin());
-        user.setEmail(registerRequestDTO.getLogin());
-        user.setFirstName(registerRequestDTO.getName());
-        user.setLastName(registerRequestDTO.getSurname());
-
-        CredentialRepresentation passwordCred = new CredentialRepresentation();
-        passwordCred.setTemporary(false);
-        passwordCred.setType(CredentialRepresentation.PASSWORD);
-        passwordCred.setValue(registerRequestDTO.getPassword());
-        user.setCredentials(Collections.singletonList(passwordCred));
+        UserRepresentation user = createKeycloakUserRepresentation(registerRequestDTO);
 
         try {
             var response = keycloak.realm(realm).users().create(user);
@@ -102,60 +89,66 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
-    @Override
-    public LoginResponseDTO createAuthToken(LoginRequestDTO loginRequestDTO) {
+    private UserRepresentation createKeycloakUserRepresentation(RegisterRequestDTO registerRequestDTO) {
+        UserRepresentation user = new UserRepresentation();
+        user.setEnabled(true);
+        user.setUsername(registerRequestDTO.getLogin());
+        user.setEmail(registerRequestDTO.getLogin());
+        user.setFirstName(registerRequestDTO.getName());
+        user.setLastName(registerRequestDTO.getSurname());
+
+        CredentialRepresentation passwordCred = new CredentialRepresentation();
+        passwordCred.setTemporary(false);
+        passwordCred.setType(CredentialRepresentation.PASSWORD);
+        passwordCred.setValue(registerRequestDTO.getPassword());
+        user.setCredentials(Collections.singletonList(passwordCred));
+        return user;
+    }
+
+    private LoginResponseDTO fetchToken(MultiValueMap<String, String> params) {
         String url = serverUrl + "/realms/" + realm + "/protocol/openid-connect/token";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-        map.add("grant_type", "password");
-        map.add("client_id", clientId);
-        map.add("client_secret", clientSecret);
-        map.add("username", loginRequestDTO.getLogin());
-        map.add("password", loginRequestDTO.getPassword());
+        MultiValueMap<String, String> requestBody = new LinkedMultiValueMap<>();
+        requestBody.add("client_id", clientId);
+        requestBody.add("client_secret", clientSecret);
+        requestBody.addAll(params);
 
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(requestBody, headers);
 
         ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
         Map<String, Object> responseBody = response.getBody();
 
+        if (responseBody == null) throw new InvalidTokenException();
+
         LoginResponseDTO loginResponseDTO = new LoginResponseDTO();
         loginResponseDTO.setAccessToken((String) responseBody.get("access_token"));
         loginResponseDTO.setRefreshToken((String) responseBody.get("refresh_token"));
-
         return loginResponseDTO;
     }
 
     @Override
-    public LoginResponseDTO refreshAuthToken(String refreshToken) {
-        String url = serverUrl + "/realms/" + realm + "/protocol/openid-connect/token";
+    public LoginResponseDTO createAuthToken(LoginRequestDTO loginRequestDTO) {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("grant_type", "password");
+        params.add("username", loginRequestDTO.getLogin());
+        params.add("password", loginRequestDTO.getPassword());
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-        map.add("grant_type", "refresh_token");
-        map.add("client_id", clientId);
-        map.add("client_secret", clientSecret);
-        map.add("refresh_token", refreshToken);
-
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
-
-        try {
-            ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
-            Map<String, Object> responseBody = response.getBody();
-
-            LoginResponseDTO loginResponseDTO = new LoginResponseDTO();
-            loginResponseDTO.setAccessToken((String) responseBody.get("access_token"));
-            loginResponseDTO.setRefreshToken((String) responseBody.get("refresh_token"));
-            return loginResponseDTO;
-        } catch (Exception e) {
-            throw new InvalidTokenException();
-        }
+        return fetchToken(params);
     }
 
+    @Override
+    public LoginResponseDTO refreshAuthToken(String refreshToken) {
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("grant_type", "refresh_token");
+        params.add("refresh_token", refreshToken);
+
+        return fetchToken(params);
+    }
+
+    @Override
     public String validateToken(String authHeader) {
         String tokenValue = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
         try {
