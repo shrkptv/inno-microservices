@@ -1,8 +1,6 @@
 package dev.shrkptv.authservice.service.impl;
 
 import dev.shrkptv.authservice.client.UserFeignClient;
-import dev.shrkptv.authservice.database.entity.AuthUser;
-import dev.shrkptv.authservice.database.repository.AuthUserRepository;
 import dev.shrkptv.authservice.dto.LoginRequestDTO;
 import dev.shrkptv.authservice.dto.LoginResponseDTO;
 import dev.shrkptv.authservice.dto.RegisterRequestDTO;
@@ -20,8 +18,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.stereotype.Service;
@@ -37,7 +33,6 @@ import java.util.Map;
 @Slf4j
 public class AuthServiceImpl implements AuthService {
 
-    private final AuthUserRepository authUserRepository;
     private final UserFeignClient userFeignClient;
     private final Keycloak keycloak;
     private final RestTemplate restTemplate;
@@ -54,15 +49,9 @@ public class AuthServiceImpl implements AuthService {
     @Value("${GOOGLE_REDIRECT_URI}")
     private String googleRedirectUri;
 
-    @Override
-    public UserDetails loadUserByUsername(String login) throws UsernameNotFoundException{
-        return authUserRepository.findByLogin(login)
-                .orElseThrow(() -> new UsernameNotFoundException("User with login '" + login + "' not found"));
-    }
-
 
     @Override
-    public AuthUser save(RegisterRequestDTO registerRequestDTO) {
+    public void save(RegisterRequestDTO registerRequestDTO) {
         UserRepresentation user = createKeycloakUserRepresentation(registerRequestDTO);
 
         try {
@@ -80,10 +69,6 @@ public class AuthServiceImpl implements AuthService {
             userCreateRequestDTO.setEmail(registerRequestDTO.getLogin());
 
             userFeignClient.createUser(userCreateRequestDTO);
-
-            AuthUser authUser = new AuthUser();
-            authUser.setLogin(registerRequestDTO.getLogin());
-            return authUser;
 
         } catch (Exception e) {
             log.error("Registration error: {}", e.getMessage());
