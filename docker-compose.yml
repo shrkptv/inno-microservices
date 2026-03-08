@@ -189,6 +189,7 @@ services:
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
       SERVER_PORT: ${USER_SERVICE_PORT}
+      KC_SERVER_URL: ${KC_SERVER_URL}
     depends_on:
       - user-db
       - auth-service

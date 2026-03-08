@@ -1,4 +1,4 @@
-package dev.shrkptv.authservice.config;
+package dev.shrkptv.userservice.config;
 
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
@@ -18,17 +18,31 @@ public class KeycloakConfig {
     @Value("${kc.client-id}")
     private String clientId;
 
-    @Value("${kc.client-secret}")
+    @Value("${kc.client-secret:}")
     private String clientSecret;
+
+    @Value("${kc.username:}")
+    private String username;
+
+    @Value("${kc.password:}")
+    private String password;
 
     @Bean
     public Keycloak keycloak() {
-        return KeycloakBuilder.builder()
+        KeycloakBuilder builder = KeycloakBuilder.builder()
                 .serverUrl(serverUrl)
                 .realm(realm)
-                .grantType("client_credentials")
-                .clientId(clientId)
-                .clientSecret(clientSecret)
-                .build();
+                .clientId(clientId);
+
+        if (username != null && !username.isBlank()) {
+            builder.grantType("password")
+                    .username(username)
+                    .password(password);
+        } else {
+            builder.grantType("client_credentials")
+                    .clientSecret(clientSecret);
+        }
+
+        return builder.build();
     }
 }

@@ -10,17 +10,25 @@ import dev.shrkptv.userservice.exception.UserNotFoundByEmailException;
 import dev.shrkptv.userservice.exception.UserNotFoundByIdException;
 import dev.shrkptv.userservice.mapper.UserMapper;
 import dev.shrkptv.userservice.services.impl.UserServiceImpl;
+import jakarta.ws.rs.core.Response;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.resource.RealmResource;
+import org.keycloak.admin.client.resource.UsersResource;
+import org.keycloak.representations.idm.UserRepresentation;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
@@ -31,8 +39,19 @@ class UserServiceTest {
     private UserRepository userRepository;
     @Mock
     private UserMapper userMapper;
+    @Mock
+    private Keycloak keycloak;
+    @Mock
+    private RealmResource realmResource;
+    @Mock
+    private UsersResource usersResource;
     @InjectMocks
     private UserServiceImpl userService;
+
+    @BeforeEach
+    void setUp() {
+        ReflectionTestUtils.setField(userService, "realm", "test-realm");
+    }
 
     @Test
     @DisplayName("Create new user when email is not taken")
@@ -40,6 +59,7 @@ class UserServiceTest {
         UserCreateDTO userCreateDTO = new UserCreateDTO();
         userCreateDTO.setEmail("test@gmail.com");
         userCreateDTO.setName("Vanya");
+        userCreateDTO.setPassword("1234");
 
         User user = new User();
         user.setId(1L);
@@ -51,6 +71,10 @@ class UserServiceTest {
         userResponseDTO.setEmail("test@gmail.com");
         userResponseDTO.setName("Vanya");
 
+        when(keycloak.realm("test-realm")).thenReturn(realmResource);
+        when(realmResource.users()).thenReturn(usersResource);
+        when(usersResource.create(any(UserRepresentation.class)))
+                .thenReturn(Response.status(201).build());
         when(userRepository.findUserByEmail(userCreateDTO.getEmail()))
                 .thenReturn(Optional.empty());
         when(userRepository.save(user)).thenReturn(user);
