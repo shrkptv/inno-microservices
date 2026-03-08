@@ -66,20 +66,6 @@ services:
     networks:
       - inno-microservices-network
 
-  auth-db:
-    image: postgres:latest
-    container_name: auth-service-database
-    environment:
-      POSTGRES_DB: ${AUTH_DB_NAME}
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - ${AUTH_DB_PORT}:5432
-    volumes:
-      - auth-service-database-data:/var/lib/postgresql
-    networks:
-      - inno-microservices-network
-
   user-db:
     image: postgres:latest
     container_name: user-service-database
@@ -152,29 +138,6 @@ services:
     networks:
       - inno-microservices-network
 
-  auth-service:
-    build:
-      context: ./auth-service/auth-service
-    container_name: authentication-service
-    ports:
-      - ${AUTH_SERVICE_PORT}:8000
-    environment:
-      DB_URL: ${AUTH_DB_URL}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
-      SPRING_JPA_HIBERNATE_DDL_AUTO: none
-      JWT_SECRET: ${JWT_SECRET}
-      SERVER_PORT: ${AUTH_SERVICE_PORT}
-      USER_SERVICE_URL: ${USER_SERVICE_URL}
-      KC_CLIENT_SECRET: ${KC_CLIENT_SECRET}
-      JWK_SET_URI: ${JWK_SET_URI}
-      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI}
-    depends_on:
-      - auth-db
-      - alloy
-    networks:
-      - inno-microservices-network
-
   user-service:
     build:
       context: ./user-service
@@ -190,9 +153,9 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       SERVER_PORT: ${USER_SERVICE_PORT}
       KC_SERVER_URL: ${KC_SERVER_URL}
+      KC_CLIENT_SECRET: ${KC_CLIENT_SECRET}
     depends_on:
       - user-db
-      - auth-service
       - redis
       - alloy
     networks:
@@ -216,7 +179,6 @@ services:
     depends_on:
       - order-db
       - kafka
-      - auth-service
       - user-service
       - alloy
     networks:
@@ -238,7 +200,6 @@ services:
     depends_on:
       - payment-db
       - kafka
-      - auth-service
       - user-service
       - order-service
       - alloy
@@ -258,9 +219,7 @@ services:
       SERVER_PORT: ${API_GATEWAY_PORT}
       FRONTEND_URL: ${FRONTEND_URL}
       JWK_SET_URI: ${JWK_SET_URI}
-      ISSUER_URI: ${ISSUER_URI}
     depends_on:
-      - auth-service
       - user-service
       - order-service
       - payment-service
@@ -301,7 +260,6 @@ services:
       - inno-microservices-network
 
 volumes:
-  auth-service-database-data:
   user-service-database-data:
   order-service-database-data:
   redis-data:
