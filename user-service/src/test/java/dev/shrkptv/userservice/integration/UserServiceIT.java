@@ -58,6 +58,7 @@ public class UserServiceIT extends AbstractIT{
         user.setSurname(surname);
         user.setEmail(email);
         user.setBirthDate(birthDate);
+        user.setPassword("1234");
         userService.createUser(user);
         return userService.getUserByEmail(email);
     }

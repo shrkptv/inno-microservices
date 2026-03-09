@@ -1,4 +1,4 @@
-package dev.shrkptv.authservice.exception;
+package dev.shrkptv.userservice.exception;
 
 public class FailedRegistrationException extends RuntimeException {
     public FailedRegistrationException() {

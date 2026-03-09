@@ -23,4 +23,7 @@ public class UserCreateDTO {
     @Email(message = "invalid email format")
     @NotBlank(message = "email can't be empty")
     private String email;
+
+    @NotBlank(message = "Password can't be blank")
+    private String password;
 }
