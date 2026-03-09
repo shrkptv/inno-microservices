@@ -38,5 +38,5 @@ management:
 kc:
   server-url: ${KC_SERVER_URL}
   realm: inno-realm
-  client-id: auth-service
+  client-id: backend-client
   client-secret: ${KC_CLIENT_SECRET}
